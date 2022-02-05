@@ -368,6 +368,12 @@ Window_Base.prototype.drawActorTp = function(actor, x, y, width) {
     this.drawText(actor.tp, x + width - 64, y, 64, 'right');
 };
 
+//================================================
+// alias Window_Command
+//================================================
+Window_Command.prototype.commandExt = function(index) {
+    return this._list[index].ext;
+};
 
 //================================================
 // alias Window_Gold

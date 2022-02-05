@@ -319,6 +319,6 @@ Scene_Menu.prototype.onFormationOk = function() {
 };
 
 Scene_Menu.prototype.commandOptions = function() {
-	SceneManager.push(Scene_Gallery);
+	SceneManager.push(Scene_KnsGallery);
 };
 })();

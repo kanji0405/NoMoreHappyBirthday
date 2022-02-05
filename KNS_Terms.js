@@ -88,6 +88,11 @@ KNS_TERMS = {
 	CATEGORY_ARMOR_TEXT:	'\\c[1]防具を一覧で見る',
 	CATEGORY_KEYITEM_TEXT:	'\\c[1]大切なものを一覧で見る',
 
+	GALLERY_MESSAGE:'文章履歴',
+	GALLERY_ENEMY:'遭遇した敵',
+	GALLERY_MESSAGE_TEXT:'\\c[1]100行前までの会話を遡る',
+	GALLERY_ENEMY_TEXT:'\\c[1]遭遇してきた敵を一覧で見る',
+
 	MENU_OTHER_CHARACTER:'QW:別のキャラ',
 
 	EQUIP_ITEM:		'装備',
@@ -119,8 +124,9 @@ KNS_TERMS = {
 	TYPE_PARTS: '装備箇所',
 	TYPE_ROLE: '\\c[2]現在のロール: \\c[0]',
 	EQUIP_PARTS:[
-		'', '右手', '左手', '頭', '体', '装飾', 'アビリティ'
+		'', '武器', '盾', '頭', '体', '装飾', 'アビリティ'
 	],
+
 	BATTLE_PARTY: ['戦う', '逃げる'],
 	BATTLE_ACTOR: ['スキル', '防御', 'アイテム', 'パーティ'],
 	BATTLE_EQUIP: '装備変更',
