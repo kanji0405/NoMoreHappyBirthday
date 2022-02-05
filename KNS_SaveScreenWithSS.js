@@ -22,7 +22,7 @@ DataManager.makeSavefileInfo = function() {
 	}
 	info.advice	= $gameVariables.value(6);
 	info.gold	= $gameParty.gold();
-	info.place	= $gameMap.displayName();
+	info.place	= $dataMap.displayName;
 	return info;
 };
 
@@ -311,7 +311,7 @@ class Window_SSStatus extends Window_Base{
 		this.drawSubInfo(
 			x, 40, w, KNS_TERMS.FILE_GOLD, info.gold, KNS_TERMS.CURRENCY_UNIT);
 		this.drawSubInfo(
-			x, 100, w, KNS_TERMS.FILE_PLACE, info.place, null);
+			x, 100, w, KNS_TERMS.FILE_PLACE, $gameMap.displayName(info.place), null);
 		if (info.advice != undefined){
 			const text = KNS_ADVICE[info.advice];
 			if (text){

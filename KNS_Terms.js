@@ -96,6 +96,7 @@ KNS_TERMS = {
 	GALLERY_NO_DATA:'NO DATA',
 	GALLERY_PRICE:'値段',
 	EQUIPPABLE_ROLE:'装備可能なロール',
+	ENEMY_ROLE_POINT:'ロールポイント',
 
 	MENU_OTHER_CHARACTER:'QW:別のキャラ',
 
@@ -143,6 +144,15 @@ KNS_NAMES = {
 	nem:		4,
 	hatena:		"？？？？？",
 }
+
+KNS_MAPNAMES = [
+	'ナルポの家',
+	'バニッチの家',
+	'ボイドシティ',
+	'',
+	'',
+	'',
+]
 
 KNS_ADVICE = [
 	"東にある@バス停@に行こう",

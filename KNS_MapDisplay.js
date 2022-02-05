@@ -1,4 +1,12 @@
-
+Game_Map.KNS_RE_MAP_NAME = /^(\d+)$/
+Game_Map.prototype.displayName = function(name) {
+	const base = name === undefined ? $dataMap.displayName : name;
+	if (Game_Map.KNS_RE_MAP_NAME.test(base)){
+		return KNS_MAPNAMES[Math.floor(base)];
+	}else{
+		return base;
+	}
+};
 //=========================================================
 // new Sprite_ObtainedWeapon < Sprite_KnsWeapon
 //=========================================================

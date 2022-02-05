@@ -49,9 +49,59 @@ Game_System.prototype.knsIsInHistory = function(type, id){
 	return list.includes(id);
 }
 
+Game_System.prototype.knsIsItemInHistory = function(item){
+	if (!item) return false;
+	let type = 0;
+	if (DataManager.isWeapon(item)){
+		type = 1;
+	}else if (DataManager.isArmor(item)){
+		type = 2;
+	}else if (DataManager.isEnemy(item)){
+		type = 3;
+	}
+	return this.knsIsInHistory(type, item.id);
+}
+
 // message
-Game_System.prototype.knsAddMessageLog = function(line){}
-Game_System.prototype.knsGetMessageLog = function(){}
+Game_System.prototype.knsGetMessageLog = function(){
+	if (this._knsMessageLog === undefined){
+		this._knsMessageLog = [];
+	}
+	return this._knsMessageLog;
+}
+
+KNS_MenuGallery.RE_MESSAGE_NAME = /^\\c\[3\]\\>(.+?)\\c\[0\]\\<$/;
+KNS_MenuGallery.RE_MESSAGE_VAR = /\\v\[(\d+)\]/g;
+KNS_MenuGallery.RE_MESSAGE_NEEDLESS = /\\[\^\.\|><\$\{\}]/g;
+Game_System.prototype.knsAddMessageLog = function(line){
+	if (KNS_MenuGallery.RE_MESSAGE_NAME.test(line)){
+		for (let i = 1; i < $dataActors.length; i++){
+			if (RegExp.$1 == $gameActors.actor(i).name()){
+				line = i;
+				break;
+			}
+		}
+		if (typeof line === 'string'){
+			line = [line];
+		}
+	}else{
+		line = line.replace(KNS_MenuGallery.RE_MESSAGE_VAR, function(_, id){
+			return $gameVariables.value(id);
+		}).replace(KNS_MenuGallery.RE_MESSAGE_NEEDLESS, '');
+	}
+	const array = this.knsGetMessageLog();
+	array.push(line);
+	if (array.length > 100) array.shift();
+}
+
+//======================================================
+// alias Game_Message
+//======================================================
+const _Game_Message_add = Game_Message.prototype.add;
+Game_Message.prototype.add = function(text){
+	_Game_Message_add.call(this, text);
+	$gameSystem.knsAddMessageLog(text);
+}
 
 //======================================================
 // alias Game_Party
@@ -176,10 +226,11 @@ class Window_KnsGalleryCommand extends Window_Command{
 			this._listWindow.show();
 			this._listWindow.setData(this.commandExt(index), this._obtainedList);
 		}else{
-			this._logWindow.show();
 			this._infoWindow.hide();
 			this._listWindow.hide();
-			this._logWindow.deselect();
+			this._logWindow.show();
+			this._logWindow.refresh();
+			this._logWindow.select(this._logWindow.maxItems() - 1);
 		}
 	}
 }
@@ -193,8 +244,53 @@ class Window_KnsMessageLog extends Window_Selectable{
 		super(0, y, Graphics.width, h);
 		this.hide();
 		this.opacity = 0;
+		this._data = $gameSystem.knsGetMessageLog();
 	}
-}
+	maxItems(){ return this._data ? this._data.length : 0; }
+	standardFontSize(){ return 22; }
+	itemHeight(){ return 32; }
+	drawItem(index){
+		const text = this._data[index];
+		if (text === undefined){
+			return;
+		}
+		const rect = this.itemRectForText(index);
+		if (typeof text == 'string'){
+			this.drawTextEx(text, rect.x + 20, rect.y);
+		}else{
+			let name;
+			if (typeof text == 'number'){
+				name = $gameActors.actor(text).name();
+			}else{
+				name = text[0];
+			}
+			this.changeTextColor(this.textColor(3));
+			this.drawText(name, rect.x, rect.y, rect.width);
+		}
+	}
+	processCursorMove() {
+		if (this.isCursorMovable()) {
+			if (Input.isPressed('down')) {
+				this.cursorDown(false);
+			}
+			if (Input.isPressed('up')) {
+				this.cursorUp(false);
+			}
+			if (Input.isRepeated('left')) {
+				this.cursorUp(false);
+			}
+			if (Input.isRepeated('right')) {
+				this.cursorDown(false);
+			}
+			if (!this.isHandled('pagedown') && Input.isTriggered('pagedown')) {
+				this.cursorPagedown();
+			}
+			if (!this.isHandled('pageup') && Input.isTriggered('pageup')) {
+				this.cursorPageup();
+			}
+		}
+	};
+	}
 
 
 //======================================================
@@ -205,7 +301,7 @@ class Window_KnsGalleryList extends Window_Selectable{
 	knsWeaponY(){ return 28; }
 	setInfoWindow(info){ this._infoWindow = info; }
 	maxItems(){ return this._data ? this._data[1].length : 0; }
-	knsIsInHistory(item){
+	knsIsDataInHistory(item){
 		return item && this._data[0] && this._data[0].includes(item);
 	}
 	item(index){
@@ -222,7 +318,7 @@ class Window_KnsGalleryList extends Window_Selectable{
 	drawItem(index){
 		const item = this.item(index);
 		if (!item) return;
-		const inHistory = this.knsIsInHistory(item);
+		const inHistory = this.knsIsDataInHistory(item);
 		this.changePaintOpacity(inHistory);
 		let numWidth = 55;
 		const rect = this.itemRect(index);
@@ -237,7 +333,7 @@ class Window_KnsGalleryList extends Window_Selectable{
 			if (inHistory) name = item.name;
 			this.drawText(name, rect.x, rect.y, rect.width);
 		}else{
-			if (this.knsIsInHistory(item)){
+			if (inHistory){
 				this.drawItemName(item, rect.x, rect.y, rect.width);
 			}else{
 				this.drawText(KNS_TERMS.GALLERY_NO_DATA, 
@@ -263,7 +359,7 @@ class Window_KnsGalleryList extends Window_Selectable{
 		const item = this.item();
 		this._helpWindow.setItem(item);
 		if (this._infoWindow){
-			this._infoWindow.setItem(item, this.knsIsInHistory(item));
+			this._infoWindow.setItem(item, this.knsIsDataInHistory(item));
 		}
 	}
 	deactivate(){
@@ -272,7 +368,7 @@ class Window_KnsGalleryList extends Window_Selectable{
 	}
 
 }
-Window_KnsGalleryList.COLOR_NOT_IN_HISTORY = [-255,-255,-255,0];
+Window_KnsGalleryList.COLOR_NOT_IN_HISTORY = [-255,255,-255,255];
 KNS_Menu.setIconWindow(Window_KnsGalleryList);
 
 //======================================================
@@ -284,8 +380,12 @@ class Window_KnsGalleryInfo extends Window_Base{
 		this.hide();
 		this._item = null;
 		this.setBackgroundType(1);
-		this._portraitSprite = new Sprite();
-		this.addChild(this._portraitSprite);
+		this._enemySprite = new Sprite();
+		this._enemySprite.x = this.width - 130;
+		this._enemySprite.y = this.height;
+		this._enemySprite.anchor.x = 0.5;
+		this._enemySprite.anchor.y = 1;
+		this.addChild(this._enemySprite);
 	}
 	setItem(item, has){
 		if (this._item === item) return;
@@ -302,7 +402,7 @@ class Window_KnsGalleryInfo extends Window_Base{
 	refresh(){
 		this.contents.clear();
 		this.resetFontSettings();
-		this._portraitSprite.bitmap = null;
+		this._enemySprite.bitmap = null;
 	}
 	drawTitleAndValue(title, value, x, y, width){
 		this.changeTextColor(this.systemColor());
@@ -384,75 +484,98 @@ class Window_KnsGalleryInfo extends Window_Base{
 		}
 	}
 	refreshEnemy(enemy, has){
-		let x = 0;
-		let y = 0;
-		let lineHeight = this.lineHeight();
-
-		if (!has) {
-			this._portraitSprite.bitmap = null;
+		if (!has){
+			this._enemySprite.bitmap = null;
 			return;
+		}else{
+			this._enemySprite.bitmap = ImageManager.loadEnemy(
+				enemy.battlerName, enemy.battlerHue
+			);
 		}
-
-		this._portraitSprite.bitmap = ImageManager.loadEnemy(
-			enemy.battlerName, enemy.battlerHue
-		);
-
-		this.resetTextColor();
+		let x = this.textPadding();
+		let y = x;
 		this.drawText(enemy.name, x, y);
 
-		x = this.textPadding();
-		y = lineHeight + this.textPadding();
-
-		for (var i = 0; i < 8; i++) {
-			this.changeTextColor(this.systemColor());
-			this.drawText(TextManager.param(i), x, y, 160);
-			this.resetTextColor();
-			this.drawText(enemy.params[i], x + 160, y, 60, 'right');
-			y += lineHeight;
-		}
-
-		var rewardsWidth = 280;
-		x = this.contents.width - rewardsWidth;
-		y = lineHeight + this.textPadding();
-
-		this.resetTextColor();
-		this.drawText(enemy.exp, x, y);
-		x += this.textWidth(enemy.exp) + 6;
-		this.changeTextColor(this.systemColor());
-		this.drawText(TextManager.expA, x, y);
-		x += this.textWidth(TextManager.expA + '  ');
-
-		this.resetTextColor();
-		this.drawText(enemy.gold, x, y);
-		x += this.textWidth(enemy.gold) + 6;
-		this.changeTextColor(this.systemColor());
-		this.drawText(TextManager.currencyUnit, x, y);
-
-		x = this.contents.width - rewardsWidth;
+		let lineHeight = this.lineHeight() - 4;
 		y += lineHeight;
+		let space = 8;
+		let paramWidth = (this.contents.width - space >> 1) - x * 2;
+		for (let i = 0; i < 8; i++){
+			let x2 = x + (paramWidth + space * 2) * (i % 2);
+			let y2 = y + lineHeight * (i >> 1);
+			this.drawTitleAndValue(
+				TextManager.param(i), enemy.params[i],
+				x2, y2, paramWidth
+			);
+		}
+		y += lineHeight * 3;
 
-		Game_Enemy.getKnsRolePoint
+		let width = (this.contents.width) - x * 2;
+		this.drawTitleAndValue(
+			KNS_TERMS.STATUS_EXP, enemy.exp, x, 
+			y += lineHeight, width
+		);
+		this.drawTitleAndValue(
+			KNS_TERMS.CURRENCY_UNIT, enemy.gold, x, 
+			y += lineHeight, width
+		);
+		this.drawTitleAndValue(
+			KNS_TERMS.ENEMY_ROLE_POINT, 
+			Game_Enemy.getKnsRolePoint(enemy.id), x, 
+			y += lineHeight, width
+		);
 
-		for (var j = 0; j < enemy.dropItems.length; j++) {
-			var di = enemy.dropItems[j];
-			if (di.kind > 0) {
-				var item = Game_Enemy.prototype.itemObject(di.kind, di.dataId);
-				this.drawItemName(item, x, y, rewardsWidth);
-				y += lineHeight;
+		y -= 12;
+		width = width / 3;
+		for (let j = 0; j < enemy.dropItems.length; j++) {
+			let di = enemy.dropItems[j];
+			if (di.kind > 0){
+				y += 48;
+				this.knsDrawDropItem(
+					Game_Enemy.prototype.itemObject(di.kind, di.dataId),
+					di.denominator, x, y, width
+				);
 			}
 		}
 	}
+	knsDrawDropItem(item, denominator, x, y, width){
+		const sp = this.knsGenerateIcon(item, x, y);
+		this.contents.fontSize = 18;
+		this.drawText("1 / " + denominator, x, y+24, width, 'right');
+		const iconBoxWidth = this.knsIconWidth(item);
+		x += iconBoxWidth
+		width -= iconBoxWidth;
+		this.contents.fillRect(x, y + 30, width, 1, this.contents.textColor);
+		this.contents.fontSize = 22;
+		if ($gameSystem.knsIsItemInHistory(item)){
+			this.drawText(item.name, x, y, width, 'right');
+		}else{
+			this.changePaintOpacity(false);
+			sp.opacity = this.contents.paintOpacity;
+			sp.setColorTone(Window_KnsGalleryList.COLOR_NOT_IN_HISTORY);
+			this.drawText(KNS_TERMS.GALLERY_NO_DATA, x, y, width, 'right');
+			this.changePaintOpacity(true);
+		}
+	}
+	knsWeaponY(){ return 28; }
 	update(){
 		super.update();
-		if (this._portraitSprite.bitmap) {
-			const bitmapHeight = this._portraitSprite.bitmap.height;
-			const contentsHeight = this.contents.height;
+		if (this._enemySprite.bitmap && this._enemySprite.bitmap.width > 0){
+			const width = this._enemySprite.bitmap.width;
+			const height = this._enemySprite.bitmap.height;
+			const frameWidth = 255;
+			const frameHeight = 174;
 			let scale = 1;
-			if (bitmapHeight > contentsHeight) {
-				scale = contentsHeight / bitmapHeight;
+			if (width < height){
+				if (width > frameWidth){
+					scale = frameWidth / width;
+				}
+			}else{
+				if (height > frameHeight){
+					scale = frameHeight / height;
+				}
 			}
-			this._portraitSprite.scale.x = 
-			this._portraitSprite.scale.y = scale;
+			this._enemySprite.scale.x = this._enemySprite.scale.y = scale;
 		}
 	}
 }
@@ -490,7 +613,8 @@ class Scene_KnsGallery extends Scene_MenuBase{
 	}
 	knsCreateInfoWindow(){
 		this._infoWindow = new Window_KnsGalleryInfo(
-			this._listWindow.y, this._listWindow.width, this._listWindow.height);
+			this._listWindow.y - 12, this._listWindow.width, 
+			this._listWindow.height + 24);
 		this.addWindow(this._infoWindow);
 	}
 	knsCreateMessageLogWindow(){
