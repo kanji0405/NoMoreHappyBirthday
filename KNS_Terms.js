@@ -44,7 +44,7 @@ KNS_TERMS = {
 	MENU_FORMATION: '並び替え',
 	MENU_ROLE: 'ロール変更',
 	MENU_SAVE: 'セーブ',
-	MENU_OPTIONS: 'ギャラリー',
+	MENU_OPTIONS: 'ライブラリ',
 	MENU_TITLE: 'オプション',
 
 	MENU_ITEM_TEXT: '持っているアイテムを見る',
@@ -92,6 +92,10 @@ KNS_TERMS = {
 	GALLERY_ENEMY:'遭遇した敵',
 	GALLERY_MESSAGE_TEXT:'\\c[1]100行前までの会話を遡る',
 	GALLERY_ENEMY_TEXT:'\\c[1]遭遇してきた敵を一覧で見る',
+
+	GALLERY_NO_DATA:'NO DATA',
+	GALLERY_PRICE:'値段',
+	EQUIPPABLE_ROLE:'装備可能なロール',
 
 	MENU_OTHER_CHARACTER:'QW:別のキャラ',
 

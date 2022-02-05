@@ -5,8 +5,9 @@ DataManager.isItem		= function(item){ return item && item.itypeId !== undefined;
 DataManager.isWeapon	= function(item){ return item && item.wtypeId !== undefined; };
 DataManager.isArmor		= function(item){ return item && item.atypeId !== undefined; };
 DataManager.isSkill		= function(item){ return item && item.stypeId !== undefined; };
+DataManager.isEnemy		= function(item){ return item && item.battlerName !== undefined; };
 DataManager.knsDescription = function(item){
-	if (!item){
+	if (!item || item.description === undefined){
 		return '';
 	}
 	let isWeapon = this.isWeapon(item);
@@ -56,11 +57,12 @@ Window_Base.prototype.knsGenerateIcon = function(item, x, y){
 		sp.x = x+40;
 		sp.y = y+this.knsWeaponY();
 	}else{
-		if (!item.iconIndex) return;
+		if (!item.iconIndex) return null;
 		sp = new Sprite_MenuIcon(item.iconIndex, x, y);
 	}
 	sp.opacity = this.contents.paintOpacity;
 	this._iconSprites.addChild(sp);
+	return sp;
 }
 
 //================================================

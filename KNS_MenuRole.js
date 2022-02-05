@@ -5,6 +5,16 @@
 Game_Party.prototype.knsIsRoleCommandEnable = function(){
 	return $gameSwitches.value(7);
 }
+
+//=========================================================
+// alias Game_Enemy
+//=========================================================
+Game_Enemy.getKnsRolePoint = function(id){
+	return $dataEnemies[id].meta.rolePoint || 0;
+}
+Game_Enemy.prototype.getKnsRolePoint = function(){
+	return Game_Enemy.getKnsRolePoint(this.enemyId());
+}
 //=========================================================
 // alias Game_Actor
 //=========================================================
