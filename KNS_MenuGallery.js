@@ -1,11 +1,18 @@
 // KNS_MenuGallery
+class Window_KnsGalleryCommand extends Window_Command{
+	makeCommandList(){
+		fuck
+	}
+}
 class Scene_KnsGallery extends Scene_Base{
+	create(){
+		this.knsCreateCategoryWindow();
+	}
 }
 
 
 // item
 (function() {
-
     var parameters = PluginManager.parameters('ItemBook');
     var unknownData = String(parameters['Unknown Data'] || '??????');
     var priceText = String(parameters['Price Text'] || 'Price');
