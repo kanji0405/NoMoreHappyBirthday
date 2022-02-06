@@ -163,7 +163,7 @@ class Sprite_KnsMapName extends Sprite{
 }
 
 //============================================
-// new Scene_Map
+// alias Scene_Map
 //============================================
 Scene_Map.prototype.createMapNameWindow = function() {
     this._mapNameWindow = new Sprite_KnsMapName();
@@ -466,11 +466,136 @@ Scene_Battle.prototype.create = function(){
 	this._logSpriteset.y = 200;
 }
 
-
+//============================================
+// new Sprite_KnsFade
+//============================================
+class Sprite_KnsFade extends Sprite{
+	constructor(){
+		super();
+		this.knsCreateBaseBitmaps();
+		this.fadeOutCnt = -1;
+	}
+	knsCreateBaseBitmaps(){
+		const bmp = new Bitmap(108, 140);
+		const ctx = bmp._context;
+		ctx.fillStyle = '#2c7076';
+		let hw = (bmp.width  >> 1) - 2;
+		let hh = (bmp.height >> 1) - 2;
+		ctx.beginPath();
+		ctx.moveTo(hw, 0);
+		ctx.lineTo(0, hh);
+		ctx.lineTo(hw, bmp.height - 1);
+		ctx.lineTo(bmp.width - 1, hh);
+		ctx.closePath();
+		ctx.fill();
+		bmp._setDirty();
+		// baseBitmap2
+		const bmp2 = new Bitmap(bmp.width, bmp.height);
+		const ctx2 = bmp2._context;
+		ctx2.drawImage(ctx.canvas, 0, 0);
+		ctx2.globalCompositeOperation = 'source-in';
+		ctx2.fillStyle = '#972eb1';
+		ctx2.fillRect(0, 0, bmp.width, bmp.height);
+		bmp2._setDirty();
+		this._baseBitmaps = [bmp, bmp2];
+	}
+	kncCreateSprites(){
+		this.removeChildren();
+		const wid = 12;
+		const hei = 10;
+		const children1 = [];
+		const children2 = [];
+		const padX = (Graphics.width + 54) / (wid-1);
+		const padY = (Graphics.height + 70) / (hei-1);
+		for (let y = 0; y < hei; y++){
+			let i = y & 1;
+			for (let x = 0; x < wid; x++){
+				const sp = new Sprite();
+				sp.x = padX * x;
+				sp.y = padY * y;
+				if (i){
+					sp.bitmap = this._baseBitmaps[0];
+					sp.x -= padX >> 1;
+					sp.y += 8;
+					children1.push(sp);
+				}else{
+					sp.bitmap = this._baseBitmaps[1];
+					children2.push(sp);
+				}
+				sp._knsCnt = (y + x) * -3;
+				sp.scale.x = sp.scale.y = 0;
+				sp.anchor.x = sp.anchor.y = 0.5;
+			}
+		}
+		this.addChild(...children2, ...children1);
+	}
+	knsFadeOut(){
+		this._knsFadeOut = true;
+		this._knsFadeIn = false;
+		this.kncCreateSprites();
+	}
+	knsFadeIn(){
+		this._knsFadeOut = false;
+		this._knsFadeIn = true;
+	}
+	update(){
+		super.update();
+		if (this._knsFadeOut){
+			this.knsUpdateFadeOut();
+		}else if (this._knsFadeIn){
+			this.knsUpdateFadeIn();
+		}
+	}
+	knsMaxFadeCnt(){ return 20; }
+	knsUpdateFadeOut(){
+		const max = this.knsMaxFadeCnt();
+		for (let sp of this.children){
+			if (sp._knsCnt < 0){
+				sp._knsCnt++;
+			}else if (sp._knsCnt < max){
+				sp._knsCnt++;
+				sp.scale.x = sp.scale.y = sp._knsCnt / max;
+			}
+		}
+	}
+	knsUpdateFadeIn(){
+		const max = this.knsMaxFadeCnt();
+		for (let sp of this.children){
+			if (sp._knsCnt > 0){
+				sp._knsCnt--;
+				sp.scale.x = sp.scale.y = sp._knsCnt / max;
+			}else{
+				this.removeChild(sp);
+			}
+		}
+		if (this.children.length == 0){
+			this._knsFadeIn = false;
+		}
+	}
+}
 
 //============================================
 // alias Scene_Map
 //============================================
+const _Scene_Map_createDisplayObjects2 = Scene_Map.prototype.createDisplayObjects;
+Scene_Map.prototype.createDisplayObjects = function(){
+	_Scene_Map_createDisplayObjects2.call(this);
+	this.knsCreateKnsFadeSprite();
+}
+
+Scene_Map.prototype.knsCreateKnsFadeSprite = function(){
+	this._knsFadeSprite = new Sprite_KnsFade();
+	this.addChild(this._knsFadeSprite);
+}
+
+Scene_Map.prototype.knsStartFadeOut = function(){
+	this._knsFadeSprite.knsFadeOut();
+}
+
+Scene_Map.prototype.knsStartFadeIn = function(){
+	this._knsFadeSprite.knsFadeIn();
+}
+
 // for next scenes
 Scene_Map.prototype.terminate = function() {
 	Scene_Base.prototype.terminate.call(this);
@@ -509,6 +634,9 @@ Scene_Map.prototype.updateEncounterEffect = function() {
 		this._encounterEffectDuration--;
 		if (this._encounterEffectDuration == 0){
 			this._spriteset.hideCharacters();
+			if (this._fadeSprite){
+				this._fadeSprite.opacity = 0;
+			}
 			this.snapForBattleBackground();
 			this._spriteset.knsShowPlayer();
 			BattleManager.playBattleBgm();
@@ -526,7 +654,6 @@ Spriteset_Map.prototype.hideCharacters = function() {
 		}
 	}
 };
-
 
 Spriteset_Map.prototype.knsShowPlayer = function() {
 	for (let i = 0; i < this._characterSprites.length; i++) {
