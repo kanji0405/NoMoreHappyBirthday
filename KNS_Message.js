@@ -26,7 +26,7 @@ Game_Interpreter.prototype.knsGetFaceName = function(faceName){
 	return "";
 }
 
-Game_Interpreter.RE_KNS_POPTYPE = /\\([AaEe])\[(\d+)\]/;
+Game_Interpreter.RE_KNS_POPTYPE = /\\([AaEe])\[(-?\d+)\]/;
 Game_Interpreter.prototype.command101 = function(){
 	if (!$gameMessage.isBusy()) {
 		$gameMessage.setFaceImage(this._params[0], this._params[1]);
@@ -229,15 +229,21 @@ class Window_PopMessage extends Window_Message{
 		if (info){
 			let id = info[1];
 			if (info[0] == 'A'){
-				id = $gameParty.battleMembers().findIndex(function(actor){
-					return actor.actorId() == id;
-				});
-				switch(id){
-					case -1: break;
-					case  0: return $gamePlayer;
-					default: return $gamePlayer.followers().follower(id - 1);
+				if (id == 0){
+					return $gamePlayer;
+				}else if (id < 0){
+					return $gamePlayer.follower(-id - 1);
+				}else{
+					id = $gameParty.battleMembers().findIndex(function(actor){
+						return actor.actorId() == id;
+					});
+					switch(id){
+						case -1: break;
+						case  0: return $gamePlayer;
+						default: return $gamePlayer.follower(id - 1);
+					}
 				}
-			}else{
+			}else if (info[0] == 'E'){
 				if ($gameParty.inBattle()){
 					//ここに敵のキャラを入れる
 				}else{

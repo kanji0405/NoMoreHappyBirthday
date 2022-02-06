@@ -133,7 +133,7 @@ KNS_TERMS = {
 	],
 
 	BATTLE_PARTY: ['戦う', '逃げる'],
-	BATTLE_ACTOR: ['スキル', '防御', 'アイテム', 'パーティ'],
+	BATTLE_ACTOR: ['スキル', 'アイテム', '防御', 'パーティ'],
 	BATTLE_EQUIP: '装備変更',
 };
 

@@ -1,3 +1,19 @@
+//===========================================
+// alias Game_Party
+//===========================================
+Game_Party.prototype.setupBattleTestItems = function(){
+	function gainItems(list){
+		list.forEach(function(item){
+			if (item && item.name.length > 0) {
+				this.gainItem(item, this.maxItems(item));
+			}
+		}, $gameParty);
+	}
+	gainItems($dataItems);
+	gainItems($dataWeapons);
+	gainItems($dataArmors);
+}
+
 //=========================================================
 // alias DataManager
 //=========================================================

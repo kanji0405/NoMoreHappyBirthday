@@ -166,8 +166,8 @@ class Sprite_KnsMapName extends Sprite{
 // alias Scene_Map
 //============================================
 Scene_Map.prototype.createMapNameWindow = function() {
-    this._mapNameWindow = new Sprite_KnsMapName();
-    this.addChild(this._mapNameWindow);
+	this._mapNameWindow = new Sprite_KnsMapName();
+	this.addChild(this._mapNameWindow);
 };
 
 //============================================
@@ -574,6 +574,81 @@ class Sprite_KnsFade extends Sprite{
 	}
 }
 
+
+
+//============================================
+// new Sprite_KnsMenuButton
+//============================================
+class Sprite_KnsMenuButton extends Sprite{
+	knsGetTouchArea(){
+		const size = this.knsSize();
+		return [this.x - size, this.x, this.y, this.y + size];
+	}
+	knsSize(){ return 128; }
+	constructor(){
+		super(ImageManager.loadSystem('menu'));
+		this.x = Graphics.width;
+		this.anchor.x = 1;
+		this.opacity = 0;
+		this._knsMovingCnt = 1;
+		if ($gameSystem._knsPositionType === undefined){
+			$gameSystem._knsPositionType = 0;
+		}
+		this.update();
+	}
+	update(){
+		super.update();
+		if (this._knsMovingCnt > 0){
+			this.knsUpdateMoving();
+		}else{
+			this.knsUpdatePosition();
+		}
+	}
+	knsMovingMax(){ return 15; }
+	knsUpdateMoving(){
+		let ty = $gameSystem._knsPositionType == 0 ? 0 : Graphics.height - this.knsSize();
+		let max = this.knsMovingMax();
+		this.y = (ty - this.y) * (max - --this._knsMovingCnt) / max + this.y;
+		this.opacity = 64;
+	}
+	knsUpdatePosition(){
+		const area = this.knsGetTouchArea();
+		const playerX = $gamePlayer.screenX();
+		let range = 64;
+		// プレイヤーが近くにいる場合は移動する
+		if (area[0] < playerX + range && playerX <= area[1] + range){
+			const playerY = $gamePlayer.screenY();
+			if (area[2] < playerY + range && playerY <= area[3] + range){
+				$gameSystem._knsPositionType = this.y == 0 ? 1 : 0;
+				this._knsMovingCnt = this.knsMovingMax();
+			}
+		}
+	}
+	knsIsTriggered(){
+		const area = this.knsGetTouchArea();
+		if (
+			this._knsMovingCnt <= 0 && TouchInput.isTriggered() &&
+			area[0] < TouchInput.x && TouchInput.x < area[1] &&
+			area[2] < TouchInput.y && TouchInput.y < area[3]
+		){
+			this.opacity = 192;
+			return true;
+		}
+		return false;
+	}
+	knsSetTranslucent(){
+		const max = 128;
+		if (this.opacity < max){
+			this.opacity = Math.min(max, this.opacity + 8);
+		}else{
+			this.opacity = Math.max(max, this.opacity - 8);
+		}
+	}
+	knsSetHide(){
+		this.opacity = Math.max(0, this.opacity - 8);
+	}
+}
+
 //============================================
 // alias Scene_Map
 //============================================
@@ -581,6 +656,30 @@ const _Scene_Map_createDisplayObjects2 = Scene_Map.prototype.createDisplayObject
 Scene_Map.prototype.createDisplayObjects = function(){
 	_Scene_Map_createDisplayObjects2.call(this);
 	this.knsCreateKnsFadeSprite();
+	this.knsCreateMenuButtonSprite();
+}
+
+Scene_Map.prototype.knsCreateMenuButtonSprite = function(){
+	this._knsMenuButtonSprite = new Sprite_KnsMenuButton();
+	this.addChild(this._knsMenuButtonSprite);
+}
+
+const _Scene_Map_update = Scene_Map.prototype.update;
+Scene_Map.prototype.update = function(){
+	if (
+		this.isSceneChangeOk() && !SceneManager.isSceneChanging() &&
+		this.isMenuEnabled()
+	){
+		if (this._knsMenuButtonSprite.knsIsTriggered()){
+			TouchInput.clear();
+			this.menuCalling = true;
+		}else{
+			this._knsMenuButtonSprite.knsSetTranslucent();
+		}
+	}else{
+		this._knsMenuButtonSprite.knsSetHide();
+	}
+	_Scene_Map_update.call(this);
 }
 
 Scene_Map.prototype.knsCreateKnsFadeSprite = function(){
@@ -601,6 +700,7 @@ Scene_Map.prototype.terminate = function() {
 	Scene_Base.prototype.terminate.call(this);
 	if (!SceneManager.isNextScene(Scene_Battle)) {
 		this._logSpriteset.visible = false;
+		this._knsMenuButtonSprite.opacity = 0;
 		this._spriteset.update();
 		this._mapNameWindow.hide();
 		SceneManager.snapForBackground(true);
@@ -613,6 +713,7 @@ Scene_Map.prototype.terminate = function() {
 	}
 
 	$gameScreen.clearZoom();
+	this.removeChild(this._knsMenuButtonSprite);
 	this.removeChild(this._fadeSprite);
 	this.removeChild(this._logSpriteset);
 	this.removeChild(this._mapNameWindow);
@@ -622,11 +723,12 @@ Scene_Map.prototype.terminate = function() {
 
 // in battle
 Scene_Map.prototype.encounterEffectSpeed = function() {
-    return 2;
+	return 2;
 };
 
 Scene_Map.prototype.startEncounterEffect = function() {
-    this._encounterEffectDuration = this.encounterEffectSpeed();
+	this.removeChild(this._knsMenuButtonSprite);
+	this._encounterEffectDuration = this.encounterEffectSpeed();
 };
 
 Scene_Map.prototype.updateEncounterEffect = function() {

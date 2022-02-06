@@ -135,17 +135,19 @@ Window_Base.prototype.drawCircleBar = function(
 	const ctx = this.contents._context;
 	ctx.save();
 	ctx.lineWidth = barWidth;
+	ctx.lineCap = 'round';
 	ctx.beginPath();
-		ctx.strokeStyle = color1;
-		ctx.arc(rx, ry, width, startR, endR);
-		ctx.stroke();
-	ctx.closePath();
+	ctx.strokeStyle = color1;
+	ctx.arc(rx, ry, width, startR, endR);
+	ctx.stroke();
 
-	ctx.lineWidth = barWidth-2;
-	ctx.beginPath();
+	if (rate > 0){
+		ctx.lineWidth = barWidth-2;
+		ctx.beginPath();
 		ctx.strokeStyle = color2;
 		ctx.arc(rx, ry, width, startR, (endR - startR) * rate + startR);
 		ctx.stroke();
+	}
 	ctx.restore();
 	this.contents._setDirty();
 }
