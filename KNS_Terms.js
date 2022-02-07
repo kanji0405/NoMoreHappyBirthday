@@ -132,9 +132,19 @@ KNS_TERMS = {
 		'', '武器', '盾', '頭', '体', '装飾', 'アビリティ'
 	],
 
-	BATTLE_PARTY: ['戦う', '逃げる'],
-	BATTLE_ACTOR: ['スキル', 'アイテム', '防御', 'パーティ'],
+	BATTLE_PARTY_FIGHT:		'戦う',
+	BATTLE_PARTY_ESCAPE:	'逃げる',
+	BATTLE_ACTOR_SKILL:		'スキル',
+	BATTLE_ACTOR_ITEM:		'アイテム',
+	BATTLE_ACTOR_PARTY:		'パーティ',
+
+	BATTLE_PARTY_FIGHT_TEXT:	'コマンドを選ぶ',
+	BATTLE_PARTY_ESCAPE_TEXT:	'戦闘から逃走を試みる',
+	BATTLE_ACTOR_SKILL_TEXT:	'覚えているスキルを使う',
+	BATTLE_ACTOR_ITEM_TEXT:		'持っているアイテムを使う',
+	BATTLE_ACTOR_PARTY_TEXT:	'逃走などのパーティコマンドを選択する',
 	BATTLE_EQUIP: '装備変更',
+	BATTLE_EQUIP_TEXT: '装備を変更する。',
 };
 
 KNS_NAMES = {

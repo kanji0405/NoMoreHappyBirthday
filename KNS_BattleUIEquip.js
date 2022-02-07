@@ -11,6 +11,15 @@ Window_BattleItem.prototype.knsNullText = function(){
 	return KNS_TERMS.BATTLE_EQUIP;
 }
 
+const _Window_BattleItem_updateHelp = Window_BattleItem.prototype.updateHelp;
+Window_BattleItem.prototype.updateHelp = function(){
+	if (this.item() == null){
+		this._helpWindow.setText(KNS_TERMS.BATTLE_EQUIP_TEXT);
+	}else{
+		_Window_BattleItem_updateHelp.call(this);
+	}
+}
+
 const _Window_BattleItem_isEnabled = Window_BattleItem.prototype.isEnabled;
 Window_BattleItem.prototype.isEnabled = function(item){
 	return !item || _Window_BattleItem_isEnabled.call(this, item);

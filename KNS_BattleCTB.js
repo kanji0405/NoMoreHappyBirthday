@@ -286,18 +286,6 @@ Scene_Battle.prototype.changeInputWindow = function() {
 	}
 };
 
-Scene_Battle.prototype.stop = function() {
-	Scene_Base.prototype.stop.call(this);
-	if (this.needsSlowFadeOut()) {
-		this.startFadeOut(this.slowFadeSpeed(), false);
-	} else {
-		this.startFadeOut(this.fadeSpeed(), false);
-	}
-	this._statusWindow.close();
-	this._partyCommandWindow.close();
-	this._actorCommandWindow.close();
-};
-
 Scene_Battle.prototype.terminate = function() {
 	Scene_Base.prototype.terminate.call(this);
 	$gameParty.onBattleEnd();
@@ -310,16 +298,6 @@ Scene_Battle.prototype.terminate = function() {
 Scene_Battle.prototype.needsSlowFadeOut = function() {
 	return (SceneManager.isNextScene(Scene_Title) ||
 			SceneManager.isNextScene(Scene_Gameover));
-};
-
-Scene_Battle.prototype.updateStatusWindow = function() {
-	if ($gameMessage.isBusy()) {
-		this._statusWindow.close();
-		this._partyCommandWindow.close();
-		this._actorCommandWindow.close();
-	} else if (this.isActive() && !this._messageWindow.isClosing()) {
-		this._statusWindow.open();
-	}
 };
 
 Scene_Battle.prototype.updateWindowPositions = function() {
