@@ -33,7 +33,43 @@ Game_Battler.prototype.die = function() {
 	this.ctbGauge = 0;
 };
 
+
+//============================================
+// alias Scene_Battle
+//============================================
 /*
+Scene_Battle.prototype.update = function() {
+	var active = this.isActive();
+	$gameTimer.update(active);
+	$gameScreen.update();
+	this.updateStatusWindow();
+	this.updateWindowPositions();
+	if (active && !this.isBusy()) {
+		this.updateBattleProcess();
+	}
+	Scene_Base.prototype.update.call(this);
+};
+
+Scene_Battle.prototype.updateBattleProcess = function() {
+	if (!this.isAnyInputWindowActive() || BattleManager.isAborting() ||
+			BattleManager.isBattleEnd()) {
+		BattleManager.update();
+		this.changeInputWindow();
+	}
+};
+
+Scene_Battle.prototype.terminate = function() {
+	Scene_Base.prototype.terminate.call(this);
+	$gameParty.onBattleEnd();
+	$gameTroop.onBattleEnd();
+	AudioManager.stopMe();
+
+	ImageManager.clearRequest();
+};
+
+// BattleManager.selectPreviousCommand
+
+
 Game_Actor.prototype.makeActions = function() {
     Game_Battler.prototype.makeActions.call(this);
     if (this.numActions() > 0) {
@@ -241,143 +277,4 @@ class Scene_Battle
     @ctb_active_members.delete(actor)
   end
 */
-
-//============================================
-// alias Scene_Battle
-//============================================
-Scene_Battle.prototype.update = function() {
-	var active = this.isActive();
-	$gameTimer.update(active);
-	$gameScreen.update();
-	this.updateStatusWindow();
-	this.updateWindowPositions();
-	if (active && !this.isBusy()) {
-		this.updateBattleProcess();
-	}
-	Scene_Base.prototype.update.call(this);
-};
-
-Scene_Battle.prototype.updateBattleProcess = function() {
-	if (!this.isAnyInputWindowActive() || BattleManager.isAborting() ||
-			BattleManager.isBattleEnd()) {
-		BattleManager.update();
-		this.changeInputWindow();
-	}
-};
-
-Scene_Battle.prototype.terminate = function() {
-	Scene_Base.prototype.terminate.call(this);
-	$gameParty.onBattleEnd();
-	$gameTroop.onBattleEnd();
-	AudioManager.stopMe();
-
-	ImageManager.clearRequest();
-};
-
-
-Scene_Battle.prototype.startPartyCommandSelection = function() {
-	this.refreshStatus();
-	this._statusWindow.deselect();
-	this._statusWindow.open();
-	this._actorCommandWindow.close();
-	this._partyCommandWindow.setup();
-};
-
-Scene_Battle.prototype.startActorCommandSelection = function() {
-	this._statusWindow.select(BattleManager.actor().index());
-	this._partyCommandWindow.close();
-	this._actorCommandWindow.setup(BattleManager.actor());
-};
-
-Scene_Battle.prototype.selectPreviousCommand = function() {
-	BattleManager.selectPreviousCommand();
-	this.changeInputWindow();
-};
-
-Scene_Battle.prototype.selectActorSelection = function() {
-	this._actorWindow.refresh();
-	this._actorWindow.show();
-	this._actorWindow.activate();
-};
-
-Scene_Battle.prototype.onActorOk = function() {
-	var action = BattleManager.inputtingAction();
-	action.setTarget(this._actorWindow.index());
-	this._actorWindow.hide();
-	this._skillWindow.hide();
-	this._itemWindow.hide();
-	this.selectNextCommand();
-};
-
-Scene_Battle.prototype.selectEnemySelection = function() {
-	this._enemyWindow.refresh();
-	this._enemyWindow.show();
-	this._enemyWindow.select(0);
-	this._enemyWindow.activate();
-};
-
-Scene_Battle.prototype.onEnemyOk = function() {
-	var action = BattleManager.inputtingAction();
-	action.setTarget(this._enemyWindow.enemyIndex());
-	this._enemyWindow.hide();
-	this._skillWindow.hide();
-	this._itemWindow.hide();
-	this.selectNextCommand();
-};
-
-Scene_Battle.prototype.onEnemyCancel = function() {
-	this._enemyWindow.hide();
-	switch (this._actorCommandWindow.currentSymbol()) {
-	case 'attack':
-		this._actorCommandWindow.activate();
-		break;
-	case 'skill':
-		this._skillWindow.show();
-		this._skillWindow.activate();
-		break;
-	case 'item':
-		this._itemWindow.show();
-		this._itemWindow.activate();
-		break;
-	}
-};
-
-Scene_Battle.prototype.onSkillOk = function() {
-	var skill = this._skillWindow.item();
-	var action = BattleManager.inputtingAction();
-	action.setSkill(skill.id);
-	BattleManager.actor().setLastBattleSkill(skill);
-	this.onSelectAction();
-};
-
-Scene_Battle.prototype.onSkillCancel = function() {
-	this._skillWindow.hide();
-	this._actorCommandWindow.activate();
-};
-
-Scene_Battle.prototype.onItemOk = function() {
-	var item = this._itemWindow.item();
-	var action = BattleManager.inputtingAction();
-	action.setItem(item.id);
-	$gameParty.setLastItem(item);
-	this.onSelectAction();
-};
-
-Scene_Battle.prototype.onItemCancel = function() {
-	this._itemWindow.hide();
-	this._actorCommandWindow.activate();
-};
-
-Scene_Battle.prototype.onSelectAction = function() {
-	var action = BattleManager.inputtingAction();
-	this._skillWindow.hide();
-	this._itemWindow.hide();
-	if (!action.needsSelection()) {
-		this.selectNextCommand();
-	} else if (action.isForOpponent()) {
-		this.selectEnemySelection();
-	} else {
-		this.selectActorSelection();
-	}
-};
 })

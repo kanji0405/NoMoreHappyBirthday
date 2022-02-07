@@ -49,79 +49,6 @@ Game_Action.prototype.targetsForFriends = function(){
 Game_Unit.prototype.knsSelectAll = function(){
 	this.members().forEach(function(member){ member.select(); });
 };
-//===========================================
-// alias Window_BattleStatus
-//===========================================
-Window_BattleStatus.prototype.initialize = function() {
-	var width = this.windowWidth();
-	var height = this.windowHeight();
-	var x = Graphics.boxWidth - width - 4;
-	var y = Graphics.boxHeight - height;
-	Window_Selectable.prototype.initialize.call(this, x, y, width, height);
-	this.refresh();
-	this.openness = 0;
-	this.setBackgroundType(1);
-};
-
-Window_BattleStatus.prototype.standardPadding = function(){ return 12; };
-Window_BattleStatus.prototype.numVisibleRows = function(){ return 4; };
-
-Window_BattleStatus.prototype.itemRect = function(index){
-	const rect = Window_Selectable.prototype.itemRect.call(this, index);
-	rect.y += 24;
-	return rect;
-};
-
-Window_BattleStatus.prototype.windowWidth = function() {
-	return Graphics.boxWidth - 320;
-};
-
-Window_BattleStatus.prototype.windowHeight = function() {
-	return this.fittingHeight(this.numVisibleRows() + 1);
-};
-
-Window_BattleStatus.prototype.drawItem = function(index) {
-	var actor = $gameParty.battleMembers()[index];
-	this.drawBasicArea(this.basicAreaRect(index), actor);
-	this.drawGaugeArea(this.gaugeAreaRect(index), actor);
-};
-
-Window_BattleStatus.prototype.gaugeAreaWidth = function(){ return 330; };
-Window_BattleStatus.prototype.basicAreaRect = function(index) {
-	var rect = this.itemRectForText(index);
-	rect.width -= this.gaugeAreaWidth() + 15;
-	return rect;
-};
-
-Window_BattleStatus.prototype.gaugeAreaRect = function(index) {
-	var rect = this.itemRectForText(index);
-	rect.x += rect.width - this.gaugeAreaWidth();
-	rect.width = this.gaugeAreaWidth();
-	return rect;
-};
-
-
-Window_BattleStatus.prototype.drawBasicArea = function(rect, actor) {
-	this.drawActorName(actor, rect.x + 0, rect.y, 150);
-	this.drawActorIcons(actor, rect.x + 156, rect.y, rect.width - 156);
-};
-
-Window_BattleStatus.prototype.drawGaugeArea = function(rect, actor) {
-	this.drawActorHp(actor, rect.x + 0, rect.y, 201);
-	this.drawActorMp(actor, rect.x + 216,  rect.y, 114);
-};
-
-Window_BattleStatus.prototype.refreshDimmerBitmap = function() {
-	if (this._dimmerSprite) {
-		const bmp = this._dimmerSprite.bitmap;
-		const w = this.width;
-		const h = this.height;
-		bmp.resize(w, h);
-		bmp.knsDownerGradient(0, 0, w, h, 24, this.dimColor1(), this.dimColor2());
-		this._dimmerSprite.setFrame(0, 0, w, h);
-		this._dimmerSprite.scale.x = 2;
-	}
-};
 
 //===========================================
 // new Window_KnsBattleSelect
@@ -135,6 +62,18 @@ class Window_KnsBattleSelect extends Window_Selectable{
 	maxCols(){ return 1; };
 	windowWidth(){ return Graphics.width - 70; }
 	windowHeight(){ return this.fittingHeight(this.numVisibleRows()); };
+	refreshDimmerBitmap() {
+		if (this._dimmerSprite) {
+			const bmp = this._dimmerSprite.bitmap;
+			const w = this.width;
+			const h = this.height;
+			bmp.resize(w, h);
+			bmp.knsUpperGradient(0, 0, w, h, 24, this.dimColor1(), this.dimColor2());
+			this._dimmerSprite.setFrame(0, 0, w, h);
+			this._dimmerSprite.scale.x = 1.5;
+		}
+	};
+	// property
 	maxItems(){ return this._candidates ? this._candidates.length : 0; };
 	actor(){ return this._candidates ? this._candidates[this.index()] : null; }
 
@@ -142,10 +81,11 @@ class Window_KnsBattleSelect extends Window_Selectable{
 	knsAction(){ return this._action; }
 	knsIsSwitchable(){
 		const action = this.knsAction();
-		if (!action || action.isForUser()){
-			return false;
-		}
-		return true;
+		return action && !action.isForUser();
+	}
+	knsIsRangeSingle(){
+		const action = this.knsAction();
+		return action && action.isForOne() && !action.isForRandom() ? action : null;
 	}
 	// abstract
 	knsUnit(){ return null; }
@@ -154,34 +94,34 @@ class Window_KnsBattleSelect extends Window_Selectable{
 
 	// init
 	initialize(){
-		super.initialize(0, 0, this.windowWidth(), this.windowHeight());
 		this._candidates = [];
 		this._action = null;
+		super.initialize(0, 0, this.windowWidth(), this.windowHeight());
+		this.setBackgroundType(1);
 		this.hide();
 		this.refresh();
-		this.setBackgroundType(1);
 	}
 	// display
-	refresh() {
+	refresh(){
 		this._candidates = this.knsMembers();
-		const action = this.knsAction();
+		const action = this.knsIsRangeSingle();
 		if (action){
 			if (action.isForUser()){
 				this._candidates = [action.subject()];
-			}else if (!action.isForOne()){
-				this._candidates = [this._candidates[0]];
 			}
+		}else{
+			this._candidates = [this._candidates[0]];
 		}
 		super.refresh();
 	};
 	drawItem(index){
-		this.resetTextColor();
+		this.resetFontSettings();
 		const rect = this.itemRectForText(index);
 		const actor = this._candidates[index];
 		const action = this.knsAction();
 		if (actor && action){
 			this.contents.fontSize = 25;
-			const isEnemy = $gameTroop == actor.friendsUnit();
+			const isEnemy = actor.friendsUnit() == $gameTroop;
 			if (action.isForAll()){
 				let text = KNS_TERMS['TARGET_ALL_' + (isEnemy ? 'ENEMY' : 'ACTOR')];
 				this.drawText(text, rect.x, rect.y, rect.width, 'center');
@@ -207,15 +147,9 @@ class Window_KnsBattleSelect extends Window_Selectable{
 		}
 	};
 	// control
-	show(){
-		this.refresh();
-		this.select(0);
-		super.show();
-	};
 	select(index) {
 		super.select(index);
-		const action = this.knsAction();
-		if (action && action.isForOne()){
+		if (this.knsIsRangeSingle()){
 			this.knsUnit().select(this.actor());
 		}else{
 			this.knsUnit().knsSelectAll();
@@ -223,6 +157,7 @@ class Window_KnsBattleSelect extends Window_Selectable{
 	};
 	hide() {
 		super.hide();
+		this.deactivate();
 		this.knsUnit().select(null);
 	};
 	cursorLeft(){
@@ -232,43 +167,25 @@ class Window_KnsBattleSelect extends Window_Selectable{
 	cursorRight(){ this.select((this.index() + 1) % this.maxItems()); }
 	cursorUp(){ this.cursorLeft(); }
 	cursorDown(){ this.cursorRight(); }
-	cursorPageup(){
-		Input.clear();
-		TouchInput.clear();
-		if (!this.knsIsSwitchable()){
-			this.activate();
-			return;
-		}
-		this.select(this.maxItems());
-		this.deactivate();
-		this.callOkHandler();
+	onTouch(){
+		this.processPageup();
 	}
-	cursorPagedown(){ this.cursorPageup(); }
-	onTouch(){}
-	refreshDimmerBitmap() {
-		if (this._dimmerSprite) {
-			const bmp = this._dimmerSprite.bitmap;
-			const w = this.width;
-			const h = this.height;
-			bmp.resize(w, h);
-			bmp.knsUpperGradient(0, 0, w, h, 24, this.dimColor1(), this.dimColor2());
-			this._dimmerSprite.setFrame(0, 0, w, h);
-			this._dimmerSprite.scale.x = 1.5;
-		}
-	};
-	
 	// for battle
-	knsSwitchIn(action){
+	knsSetStart(action){
 		this._action = action;
+		this.refresh();
+		this.select(0);
 		this.show();
 		this.activate();
 	}
-	knsSwitchOut(){
-		this.hide();
-	}
-	knsIsSwitchParty(i){
-		if (i === undefined) i = this.index();
-		return !this._candidates[i];
+	selectSprite(index, processOk){
+		index = Math.min(this.maxItems()-1, index);
+		if (processOk && index == this.index()){
+			this.isOkEnabled() && this.processOk();
+		}else{
+			SoundManager.playCursor();
+			this.select(index);
+		}
 	}
 }
 //===========================================
@@ -278,6 +195,12 @@ class Window_KnsBattleActor extends Window_KnsBattleSelect{
 	knsUnit(){ return $gameParty; }
 	knsMembers(){ return $gameParty.battleMembers(); }
 	knsChangeTerm(){ return KNS_TERMS.CHANGE_TARGET_ENEMY; }
+	selectSprite(sp, processOk){
+		const actor = sp._character;
+		if (actor){
+			super.selectSprite(actor.actor().index(), processOk);
+		}
+	}
 }
 
 //===========================================
@@ -299,16 +222,27 @@ class Window_KnsBattleEnemy extends Window_KnsBattleSelect{
 		const enemy = this.actor();
 		return enemy ? enemy.index() : -1;
 	};
+	selectSprite(sp, processOk){
+		const actor = sp._enemy;
+		if (actor){
+			super.selectSprite(this.knsMembers().indexOf(actor), processOk);
+		}
+	}
 }
 
 //===========================================
 // alias Spriteset_Battle
 //===========================================
-Spriteset_Battle.prototype.knsClickedCharacters = function(name){
-	this._actorSprites
-	this._enemySprites
-	const firstArray = this['_' + name + 'Sprite'];
-	const secondArray = this['_' + name + 'Sprite'];
+Spriteset_Battle.prototype.knsClickedCharacter = function(){
+	const clicked = (function(sp, name){
+		return	sp.visible == true && sp.opacity > 0 && 
+				sp[name].knsIsClicked(sp.scale.x, this.x, this.y);
+	}).bind(this);
+	const actors = this._actorSprites.filter(
+		function(sp){ return clicked(sp, '_character'); }, this);
+	const enemies = this._enemySprites.filter(
+		function(sp){ return clicked(sp, '_enemy'); }, this);
+	return enemies.concat(actors)[0];
 }
 
 //===========================================
@@ -321,18 +255,47 @@ Scene_Battle.prototype.update = function(){
 }
 
 Scene_Battle.prototype.knsUpdateTargetSelect = function(){
+	if (!TouchInput.isTriggered()) return;
+	let mainWindow, subWindow;
 	if (this._actorWindow.active){
-		this.knsClickedCharacters('actor');
+		mainWindow = this._actorWindow;
+		subWindow  = this._enemyWindow;
 	}else if(this._enemyWindow.active){
-		this.knsClickedCharacters('enemy');
+		mainWindow = this._enemyWindow;
+		subWindow  = this._actorWindow;
+	}
+	if (mainWindow){
+		const enemy = this._spriteset.knsClickedCharacter();
+		if (enemy){
+			const isActor = enemy._character && 
+			enemy._character.constructor.name == 'Game_BattleActor';
+			if (mainWindow == (isActor ? this._actorWindow : this._enemyWindow)){
+				// selected friend
+				if (mainWindow.knsIsSwitchable()){
+					mainWindow.selectSprite(enemy, true);
+				}
+			}else{
+				// selected opponent
+				const old = SoundManager.playCursor;
+				SoundManager.playCursor = function(){};
+				mainWindow.processPageup();
+				SoundManager.playCursor = old;
+				if (subWindow.active){
+					subWindow.selectSprite(enemy, false);
+				}
+			}
+		}
 	}
 }
 
-
+// actor/party
 Scene_Battle.prototype.createActorWindow = function() {
 	this._actorWindow = new Window_KnsBattleActor();
 	this._actorWindow.setHandler('ok',     this.onActorOk.bind(this));
 	this._actorWindow.setHandler('cancel', this.onActorCancel.bind(this));
+	const handle = this.knsSwitchParty.bind(this, 'actor');
+	this._actorWindow.setHandler('pageup',   handle);
+	this._actorWindow.setHandler('pagedown', handle);
 	this.addWindow(this._actorWindow);
 };
 
@@ -340,22 +303,33 @@ Scene_Battle.prototype.createEnemyWindow = function() {
 	this._enemyWindow = new Window_KnsBattleEnemy();
 	this._enemyWindow.setHandler('ok',     this.onEnemyOk.bind(this));
 	this._enemyWindow.setHandler('cancel', this.onEnemyCancel.bind(this));
+	const handle = this.knsSwitchParty.bind(this, 'enemy');
+	this._enemyWindow.setHandler('pageup',   handle);
+	this._enemyWindow.setHandler('pagedown', handle);
 	this.addWindow(this._enemyWindow);
 };
 
 // original
 Scene_Battle.prototype.knsSwitchParty = function(type){
-	const action = BattleManager.inputtingAction();
-	if (action){ action.knsChangeSwitch(); }
+	let mainWindow, subWindow;
 	if (type == 'actor'){
-		this._actorWindow.knsSwitchOut();
-		this._enemyWindow.knsSwitchIn(action);
+		mainWindow = this._actorWindow;
+		subWindow = this._enemyWindow;
 	}else{
-		this._enemyWindow.knsSwitchOut();
-		this._actorWindow.knsSwitchIn(action);
+		mainWindow = this._enemyWindow;
+		subWindow = this._actorWindow;
+	}
+	if (mainWindow.knsIsSwitchable()){
+		const action = BattleManager.inputtingAction();
+		if (action){ action.knsChangeSwitch(); }
+		mainWindow.hide();
+		subWindow.knsSetStart(action);
+	}else{
+		mainWindow.activate();
 	}
 }
 
+// reset switched party
 Scene_Battle.prototype.knsClearSwitchParty = function(){
     const action = BattleManager.inputtingAction();
     if (action) action.knsClearSwitch();
@@ -363,43 +337,27 @@ Scene_Battle.prototype.knsClearSwitchParty = function(){
 
 // start
 Scene_Battle.prototype.onSelectAction = function(){
-	this.knsClearSwitchParty();
-	const action = BattleManager.inputtingAction();
 	this._skillWindow.hide();
 	this._itemWindow.hide();
+	this.knsClearSwitchParty();
+	const action = BattleManager.inputtingAction();
 	if (action.isForOpponent()) {
 		this.selectEnemySelection();
 	} else {
 		this.selectActorSelection();
 	}
 }
-Scene_Battle.prototype.selectActorSelection = function() {
-	this._actorWindow.knsSwitchIn(BattleManager.inputtingAction());
-};
 
+// start on actor/enemy window
 Scene_Battle.prototype.selectEnemySelection = function() {
-	this._enemyWindow.knsSwitchIn(BattleManager.inputtingAction());
+	this._enemyWindow.knsSetStart(BattleManager.inputtingAction());
 };
 
-// apply
-const _Scene_Battle_onActorOk = Scene_Battle.prototype.onActorOk;
-Scene_Battle.prototype.onActorOk = function() {
-	if (this._actorWindow.knsIsSwitchParty()){
-		this.knsSwitchParty('actor');
-	}else{
-		_Scene_Battle_onActorOk.call(this);
-	}
+Scene_Battle.prototype.selectActorSelection = function() {
+	this._actorWindow.knsSetStart(BattleManager.inputtingAction());
 };
 
-const _Scene_Battle_onEnemyOk = Scene_Battle.prototype.onEnemyOk;
-Scene_Battle.prototype.onEnemyOk = function() {
-	if (this._enemyWindow.knsIsSwitchParty()){
-		this.knsSwitchParty('enemy');
-	}else{
-		_Scene_Battle_onEnemyOk.call(this);
-	}
-};
-
+// cancel on actor/enemy window
 const _Scene_Battle_onActorCancel = Scene_Battle.prototype.onActorCancel;
 Scene_Battle.prototype.onActorCancel = function() {
 	this.knsClearSwitchParty();
@@ -410,28 +368,5 @@ const _Scene_Battle_onEnemyCancel = Scene_Battle.prototype.onEnemyCancel;
 Scene_Battle.prototype.onEnemyCancel = function() {
 	this.knsClearSwitchParty();
 	_Scene_Battle_onEnemyCancel.call(this)
-};
-
-// status keep
-Scene_Battle.prototype.stop = function() {
-	Scene_Base.prototype.stop.call(this);
-	if (this.needsSlowFadeOut()) {
-		this.startFadeOut(this.slowFadeSpeed(), false);
-	} else {
-		this.startFadeOut(this.fadeSpeed(), false);
-	}
-	this._partyCommandWindow.close();
-	this._actorCommandWindow.close();
-};
-
-Scene_Battle.prototype.updateStatusWindow = function(){
-	if ($gameMessage.isBusy()) {
-		this._partyCommandWindow.close();
-		this._actorCommandWindow.close();
-	}
-};
-
-Scene_Battle.prototype.updateWindowPositions = function(){
-	this._statusWindow.x = 0;
 };
 })();

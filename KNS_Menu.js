@@ -84,7 +84,8 @@ Window_MenuStatus.prototype.drawItem = function(index){
 // alias Scene_Base
 //================================================
 Scene_Base.prototype.knsCreateCancelButton = function(parents, flag){
-	this.addChild(new Sprite_KnsBackButton(parents, flag));
+	this._knsCancelButtonSprite = new Sprite_KnsBackButton(parents, flag);
+	this.addChild(this._knsCancelButtonSprite);
 }
 
 //================================================

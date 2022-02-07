@@ -129,7 +129,7 @@ class Sprite_BattleCommands extends Sprite{
 	}
 	knsUpdateChildren(){}
 	knsTouchInput(){
-		if (this._window.active && TouchInput.isPressed()){
+		if (TouchInput.isRepeated()){
 			for (let i = 0; i < this._commands.length; i++){
 				const sp = this._commands[i];
 				let tx		= TouchInput.x - this.x - sp.x + sp.width * sp.anchor.x;
@@ -147,12 +147,14 @@ class Sprite_BattleCommands extends Sprite{
 		}
 	}
 	knsOnTrigger(i){
-		if (TouchInput.isTriggered() && i == this._window.index()){
-			this._window.processOk();
-			TouchInput.clear();
-		}else if (i != this._window.index()){
-			SoundManager.playCursor();
-			this._window.select(i);
+		if (this._window.active){
+			if (TouchInput.isTriggered() && i == this._window.index()){
+				this._window.processOk();
+				TouchInput.clear();
+			}else if (i != this._window.index()){
+				SoundManager.playCursor();
+				this._window.select(i);
+			}
 		}
 	}
 }
@@ -214,6 +216,23 @@ class Sprite_PartyCommands extends Sprite_BattleCommands{
 // new Sprite_ActorCommands < Sprite_BattleCommands
 //===========================================
 class Sprite_ActorCommands extends Sprite_BattleCommands{
+	knsOnTrigger(i){
+		if (this._window.active){
+			super.knsOnTrigger(i);
+		}else if (TouchInput.isTriggered() && this.visible && this.opacity > 0){
+			const back = SceneManager._scene._knsCancelButtonSprite;
+			if (back){
+				const activeWindow = back.knsFindActiveParent();
+				let type = i == this._window.index() ? 'Ok' : 'Cancel';
+				if (activeWindow && activeWindow['is' + type + 'Enabled']()){
+					activeWindow['process' + type]();
+					if (this._window.active){
+						this._window.select(i);
+					}
+				}
+			}
+		}
+	}
 	knsCreateSprites(){
 		this.x = 666;
 		this.y = 498;

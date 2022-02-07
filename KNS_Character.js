@@ -194,17 +194,26 @@ KNS_Character.setCheckClicked = function(x, y, width, height){
 	return false;
 }
 
-Game_Enemy.prototype.knsIsClicked = function(x, y){
+Game_Enemy.prototype.knsIsClicked = function(scale, x, y){
 	const bmp = ImageManager.loadEnemy(this.battlerName());
+	scale = Math.abs(scale || 1);
 	return KNS_Character.setCheckClicked.call(this, x || 0, y || 0,
-		bmp.width >> 1, bmp.height >> 1);
+		(bmp.width >> 1) * scale, bmp.height * scale);
 }
 
 Game_Character.prototype.knsIsClicked = function(scale, x, y){
 	if (!this.isKnsCharacter()) return false;
-	scale = scale || 1;
-	return KNS_Character.setCheckClicked.call(this, x || 0, y || 0, 
-		30 * scale, 128 * scale);
+	x = x || 0;
+	y = y || 0;
+	scale = Math.abs(scale || 1);
+	let width = 40;
+	let height = 128;
+	if (this._knsMode == 'dead'){
+		x -= 10;
+		width = 128;
+		height = 45;
+	}
+	return KNS_Character.setCheckClicked.call(this, x, y, width * scale, height * scale);
 }
 
 
