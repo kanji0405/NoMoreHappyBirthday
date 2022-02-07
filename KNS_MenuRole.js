@@ -516,18 +516,12 @@ class Spriteset_RoleCharacters extends Sprite{
 		if (!(window.active && TouchInput.isTriggered())){
 			return;
 		}
-		const spW = 38;
-		const spH = 160;
 		let found = -1;
 		let foundY = -1;
 		for (let i = 0; i < this._characterSprites.length; i++){
 			const sp = this._characterSprites[i];
-			const spX = sp._knsTx;
-			const spY = sp._knsTy;
-			if (
-				spX < TouchInput.x + spW && TouchInput.x < spX + spW &&
-				spY < TouchInput.y + spH && TouchInput.y < spY
-			){
+			if (sp._character && sp._character.knsIsClicked(sp.scale.x, this.x, this.y)){
+				const spY = sp._character.screenY();
 				if (foundY < spY){
 					foundY = spY;
 					found = i;
@@ -546,7 +540,7 @@ class Spriteset_RoleCharacters extends Sprite{
 		let pad = 80;
 		if (TouchInput.x < pad){
 			window.processPageup();
-		}else if (TouchInput.x + pad > Graphics.width){
+		}else if ( + pad > Graphics.width){
 			window.processPagedown();
 		}
 	}
@@ -571,7 +565,6 @@ class Spriteset_RoleCharacters extends Sprite{
 		this.updatePosition();
 	}
 	updateCharacters(){
-		const tone = [255, 0, 0, 0];
 		this._characterSprites.forEach(function(sp){
 			if (sp._character){
 				sp._character.update();

@@ -180,6 +180,34 @@ class Sprite_KnsBodyPart extends Sprite_KnsBodyBase{
 	}
 }
 ;(function(){
+
+//=========================================================
+// - check clicked
+//=========================================================
+const KNS_Character = {};
+KNS_Character.setCheckClicked = function(x, y, width, height){
+	const spX = this.screenX() + x;
+	if (spX < TouchInput.x + width && TouchInput.x < spX + width){
+		const spY = this.screenY() + y;
+		return spY < TouchInput.y + height && TouchInput.y < spY;
+	}
+	return false;
+}
+
+Game_Enemy.prototype.knsIsClicked = function(x, y){
+	const bmp = ImageManager.loadEnemy(this.battlerName());
+	return KNS_Character.setCheckClicked.call(this, x || 0, y || 0,
+		bmp.width >> 1, bmp.height >> 1);
+}
+
+Game_Character.prototype.knsIsClicked = function(scale, x, y){
+	if (!this.isKnsCharacter()) return false;
+	scale = scale || 1;
+	return KNS_Character.setCheckClicked.call(this, x || 0, y || 0, 
+		30 * scale, 128 * scale);
+}
+
+
 //=========================================================
 // alias Game_Character
 //=========================================================
@@ -200,6 +228,11 @@ Game_Character.prototype.initMembers = function(){
 	this.setKnsMode(Math.randomInt(2) == 0 ? 'normal' : 'normal2', false);
 	this._knsLastPose._TIME = Math.randomInt(5) * 8 + 5;
 	this._knsWalkType = Math.randomInt(2);
+}
+
+Game_Character.prototype.isKnsCharacter = function(){
+	return	this._characterName &&
+			KNS_Pose.reKnsCharacter.test(this._characterName);
 }
 
 Game_Character.prototype.getActorWeaponId = function(id){
@@ -387,8 +420,7 @@ Game_Event.prototype.refreshKnsActor = function(){
 // alias Sprite_Character
 //=========================================================
 Sprite_Character.prototype.isKnsCharacter = function() {
-	return	this._characterName && 
-			KNS_Pose.reKnsCharacter.test(this._characterName);
+	return this._character && this._character.isKnsCharacter();
 }
 
 Sprite_Character.prototype.clearKnsCharacter = function() {
@@ -462,35 +494,33 @@ Sprite_Character.prototype.update = function() {
 
 Sprite_Character.prototype.updateKnsCharacter = function(){
 	if (this.isKnsCharacter()){
-		if (this._character){
-			this.y -= 16;
-			const currentPose = this._character.getCurrentPose();
-			KNS_Pose.partsList.forEach(function(parts){
-				if (KNS_Pose.reSystem.test(parts)){
-					this.y += currentPose[parts] || 0;
-					return;
-				}
-				this["_kns" + parts].setKnsActor(
-					this._character, currentPose[parts] || 0
-				);
-			}, this);
-			const target = this._character.getTargetPose();
-			this._knsBD.setFace(target ? target._FACE || 0 : 0);
-
-			// direction
-			let scale = Math.abs(this.scale.x);
-			switch (this._character._knsLastDirection || 4){
-				case 8: case 4:
-					this.rotation = -this._knsBD.rotation;
-					this.scale.x = scale;
-					break;
-				default:
-					this.rotation = this._knsBD.rotation;
-					this.scale.x = -scale;
-					break;
+		this.y -= 16;
+		const currentPose = this._character.getCurrentPose();
+		KNS_Pose.partsList.forEach(function(parts){
+			if (KNS_Pose.reSystem.test(parts)){
+				this.y += currentPose[parts] || 0;
+				return;
 			}
-			this._knsBD.rotation = 0;
+			this["_kns" + parts].setKnsActor(
+				this._character, currentPose[parts] || 0
+			);
+		}, this);
+		const target = this._character.getTargetPose();
+		this._knsBD.setFace(target ? target._FACE || 0 : 0);
+
+		// direction
+		let scale = Math.abs(this.scale.x);
+		switch (this._character._knsLastDirection || 4){
+			case 8: case 4:
+				this.rotation = -this._knsBD.rotation;
+				this.scale.x = scale;
+				break;
+			default:
+				this.rotation = this._knsBD.rotation;
+				this.scale.x = -scale;
+				break;
 		}
+		this._knsBD.rotation = 0;
 	}
 }
 

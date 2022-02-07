@@ -265,27 +265,6 @@ Scene_Battle.prototype.updateBattleProcess = function() {
 	}
 };
 
-Scene_Battle.prototype.isAnyInputWindowActive = function() {
-	return (this._partyCommandWindow.active ||
-			this._actorCommandWindow.active ||
-			this._skillWindow.active ||
-			this._itemWindow.active ||
-			this._actorWindow.active ||
-			this._enemyWindow.active);
-};
-
-Scene_Battle.prototype.changeInputWindow = function() {
-	if (BattleManager.isInputting()) {
-		if (BattleManager.actor()) {
-			this.startActorCommandSelection();
-		} else {
-			this.startPartyCommandSelection();
-		}
-	} else {
-		this.endCommandSelection();
-	}
-};
-
 Scene_Battle.prototype.terminate = function() {
 	Scene_Base.prototype.terminate.call(this);
 	$gameParty.onBattleEnd();
@@ -295,31 +274,6 @@ Scene_Battle.prototype.terminate = function() {
 	ImageManager.clearRequest();
 };
 
-Scene_Battle.prototype.needsSlowFadeOut = function() {
-	return (SceneManager.isNextScene(Scene_Title) ||
-			SceneManager.isNextScene(Scene_Gameover));
-};
-
-Scene_Battle.prototype.updateWindowPositions = function() {
-	var statusX = 0;
-	if (BattleManager.isInputting()) {
-		statusX = this._partyCommandWindow.width;
-	} else {
-		statusX = this._partyCommandWindow.width / 2;
-	}
-	if (this._statusWindow.x < statusX) {
-		this._statusWindow.x += 16;
-		if (this._statusWindow.x > statusX) {
-			this._statusWindow.x = statusX;
-		}
-	}
-	if (this._statusWindow.x > statusX) {
-		this._statusWindow.x -= 16;
-		if (this._statusWindow.x < statusX) {
-			this._statusWindow.x = statusX;
-		}
-	}
-};
 
 Scene_Battle.prototype.startPartyCommandSelection = function() {
 	this.refreshStatus();
@@ -353,20 +307,6 @@ Scene_Battle.prototype.onActorOk = function() {
 	this._skillWindow.hide();
 	this._itemWindow.hide();
 	this.selectNextCommand();
-};
-
-Scene_Battle.prototype.onActorCancel = function() {
-	this._actorWindow.hide();
-	switch (this._actorCommandWindow.currentSymbol()) {
-	case 'skill':
-		this._skillWindow.show();
-		this._skillWindow.activate();
-		break;
-	case 'item':
-		this._itemWindow.show();
-		this._itemWindow.activate();
-		break;
-	}
 };
 
 Scene_Battle.prototype.selectEnemySelection = function() {
@@ -440,12 +380,4 @@ Scene_Battle.prototype.onSelectAction = function() {
 		this.selectActorSelection();
 	}
 };
-
-Scene_Battle.prototype.endCommandSelection = function() {
-	this._partyCommandWindow.close();
-	this._actorCommandWindow.close();
-	this._statusWindow.deselect();
-};
-
-
 })

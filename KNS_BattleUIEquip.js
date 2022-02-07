@@ -68,6 +68,9 @@ class Window_BattleEquipSlot extends Window_EquipSlot{
 		if (this._itemWindow) this._itemWindow.hide();
 	}
 	isEnabled(index){
+		if ($gameTemp.isPlaytest()){
+			return true;
+		}
 		if (!this._actor || this._actor.equipSlots()[index] == 6){
 			return false;
 		}

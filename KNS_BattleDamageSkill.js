@@ -94,14 +94,9 @@ Game_Actor.prototype.attackSkillId = function() {
 //============================================
 // alias Scene_Battle
 //============================================
-const _Scene_Battle_commandAttack = Scene_Battle.prototype.commandAttack;
 Scene_Battle.prototype.commandAttack = function(){
 	BattleManager.inputtingAction().setAttack();
-	const action = BattleManager.inputtingAction();
-	if (action.needsSelection() && action.isForOpponent()){
-		_Scene_Battle_commandAttack.call(this);
-	}else{
-		this.onSelectAction();
-	}
+	this._helpWindow.hide();
+	this.onSelectAction();
 };
 })();

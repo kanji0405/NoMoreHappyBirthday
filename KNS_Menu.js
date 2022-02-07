@@ -162,9 +162,7 @@ Scene_MenuBase.prototype.knsUpdateSlide = function(){
 Scene_MenuBase.prototype.knsCreateBackBlacks = function(uy, ey){
 	let padY = 28;
 	const upper = new Sprite();
-	let index = this.children.findIndex(
-		sp => sp == this._backgroundSprite
-	) + 1;
+	let index = this.children.indexOf(this._backgroundSprite) + 1;
 	if (uy != 0){
 		upper.bitmap = new Bitmap(1, uy);
 		upper.scale.x = Graphics.width;

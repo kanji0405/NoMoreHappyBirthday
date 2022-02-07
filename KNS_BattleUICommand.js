@@ -18,6 +18,11 @@ KNS_BattleUICommand.setSprites = function(proto){
 		this.y = Graphics.height;
 		if (this._knsSprites) this._knsSprites.refresh();
 	}
+	const _activate = proto.activate;
+	proto.activate = function(){
+		_activate.call(this);
+		if (this._helpWindow) this._helpWindow.show();
+	}
 	const _open = proto.open;
 	proto.open = function(){
 		_open.call(this);
@@ -29,6 +34,8 @@ KNS_BattleUICommand.setSprites = function(proto){
 		if (this._helpWindow) this._helpWindow.hide();
 	}
 	proto.drawItem = function(index){}
+
+	proto.onTouch = function(){}
 
 	const oldCommandName = proto.commandName;
 	proto.commandName = function(i){
@@ -114,12 +121,40 @@ class Sprite_BattleCommands extends Sprite{
 		super.update();
 		this.knsUpdateVisibility();
 		this.knsUpdateChildren();
+		this.knsTouchInput();
 	}
 	knsUpdateVisibility(){
 		this.opacity = this._window.openness;
 		this.visible = this._window.visible;
 	}
 	knsUpdateChildren(){}
+	knsTouchInput(){
+		if (this._window.active && TouchInput.isPressed()){
+			for (let i = 0; i < this._commands.length; i++){
+				const sp = this._commands[i];
+				let tx		= TouchInput.x - this.x - sp.x + sp.width * sp.anchor.x;
+				if (0 <= tx && tx < sp.width){
+					let ty	= TouchInput.y - this.y - sp.y + sp.height * sp.anchor.y;
+					if (0 <= ty && ty < sp.height){
+						const color = sp.bitmap.getAlphaPixel(tx, ty);
+						if (color){
+							this.knsOnTrigger(i);
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+	knsOnTrigger(i){
+		if (TouchInput.isTriggered() && i == this._window.index()){
+			this._window.processOk();
+			TouchInput.clear();
+		}else if (i != this._window.index()){
+			SoundManager.playCursor();
+			this._window.select(i);
+		}
+	}
 }
 
 //===========================================
@@ -131,7 +166,7 @@ class Sprite_PartyCommands extends Sprite_BattleCommands{
 		this._knsBitmap = ImageManager.loadSystem('commandParty');
 		const size = this.knsCommandSize();
 		this.x = Graphics.width;
-		this.y = 390;
+		this.y = 420;
 		for (let i = 0; i < size; i++){
 			const sp = new Sprite();
 			sp.y = i * 90;
@@ -180,8 +215,8 @@ class Sprite_PartyCommands extends Sprite_BattleCommands{
 //===========================================
 class Sprite_ActorCommands extends Sprite_BattleCommands{
 	knsCreateSprites(){
-		this.x = 660;
-		this.y = 496;
+		this.x = 666;
+		this.y = 498;
 		for (let i = 0; i < this._window.numVisibleRows(); i++){
 			const sp = new Sprite();
 			sp._knsBitmap = ImageManager.loadSystem('command' + i);
@@ -224,7 +259,7 @@ class Sprite_ActorCommands extends Sprite_BattleCommands{
 				if (sp.anchor.y == 0){
 					y = 96;
 				}else if (sp.anchor.y == 1){
-					y = 40;
+					y = 80;
 				}else{
 					y = bmp.height - 86;
 				}
@@ -266,7 +301,7 @@ class Sprite_ActorCommands extends Sprite_BattleCommands{
 	}
 	knsUpdateChildren(){
 		const origin = -4;
-		const target = 6;
+		const target = 4;
 		const change = 2;
 		let index = this._window.index();
 		this._commands.forEach(function(sp, i){
@@ -337,28 +372,4 @@ Scene_Battle.prototype.knsCreateActorSprite = function(){
 	this._knsActorSprite = new Sprite_ActorCommands(this._actorCommandWindow, this._helpWindow);
 	this.addChild(this._knsActorSprite);
 }
-
-// status keep
-Scene_Battle.prototype.stop = function() {
-	Scene_Base.prototype.stop.call(this);
-	if (this.needsSlowFadeOut()) {
-		this.startFadeOut(this.slowFadeSpeed(), false);
-	} else {
-		this.startFadeOut(this.fadeSpeed(), false);
-	}
-	this._partyCommandWindow.close();
-	this._actorCommandWindow.close();
-};
-
-Scene_Battle.prototype.updateStatusWindow = function() {
-	if ($gameMessage.isBusy()) {
-		this._partyCommandWindow.close();
-		this._actorCommandWindow.close();
-	}
-};
-
-Scene_Battle.prototype.updateWindowPositions = function(){
-	this._statusWindow.x = 0;
-};
-
 })();

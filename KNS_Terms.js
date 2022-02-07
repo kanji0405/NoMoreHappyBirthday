@@ -145,6 +145,13 @@ KNS_TERMS = {
 	BATTLE_ACTOR_PARTY_TEXT:	'逃走などのパーティコマンドを選択する',
 	BATTLE_EQUIP: '装備変更',
 	BATTLE_EQUIP_TEXT: '装備を変更する。',
+
+	CHANGE_TARGET_ENEMY: 'QW:敵へ',
+	CHANGE_TARGET_ACTOR: 'QW:味方へ',
+	TARGET_RANDOM_ENEMY: '敵ランダム',
+	TARGET_RANDOM_ACTOR: '味方ランダム',
+	TARGET_ALL_ENEMY: '敵全体',
+	TARGET_ALL_ACTOR: '味方全体',
 };
 
 KNS_NAMES = {

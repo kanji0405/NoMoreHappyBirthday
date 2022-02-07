@@ -52,9 +52,8 @@ Scene_Battle.prototype.create = function(){
 	_Scene_Battle_create.call(this);
 	this.knsCreateCancelButton([
 		this._itemWindow, this._skillWindow, this._actorWindow, this._enemyWindow,
-		this._partyCommandWindow, this._actorCommandWindow, 
-		this._knsEquipItemWindow, this._knsEquipSlotWindow
-	]);
+		this._actorCommandWindow, this._knsEquipItemWindow, this._knsEquipSlotWindow
+	], true);
 }
 
 // help window
