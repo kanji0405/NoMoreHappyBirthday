@@ -479,6 +479,7 @@ Spriteset_Battle.prototype.update = function() {
     this.updateKnsFadeIn();
 	this.updateKnsZIndex();
 };
+
 Spriteset_Battle.prototype.updateKnsFadeIn = function(){
 	if (this._knsFadeInCnt < this.getKnsFadeInMax()){
 		this._knsFadeInCnt++;

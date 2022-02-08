@@ -19,18 +19,6 @@ Game_Event.prototype.knsSetSelfSwitch = function(key, value){
 	$gameSelfSwitches.setValue([this._mapId, this._eventId, key], value);
 }
 
-Game_Event.prototype.knsCheckPlayer = function(distance) {
-	let sx = Math.abs(this.deltaXFrom($gamePlayer.x));
-	let sy = Math.abs(this.deltaYFrom($gamePlayer.y));
-	if (sx + sy < distance){
-		AudioManager.playSe({name: '017-Jump03', volume: 100, pitch: 100, pan: 0});
-		this.requestBalloon(1);
-		this.knsSetSelfSwitch('B', true);
-	}else{
-		this.moveRandom();
-	}
-};
-
 Game_Event.RE_KNS_RESERVE_EVENT = /<call[:：]\s*(\d+)\s*>/;
 Game_Event.prototype.knsSetupReserveEvent = function(){
 	const original = _Game_Event_event.call(this);

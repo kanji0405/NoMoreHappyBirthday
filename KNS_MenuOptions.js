@@ -127,6 +127,7 @@ Scene_GameEnd.prototype.commandToTitle = function() {
 	if (this._helpWindow._text == text){
 		this.fadeOutAll();
 		SceneManager.goto(Scene_Title);
+		SceneManager._backgroundBitmap = null;
 	}else{
 		this._commandWindow.activate();
 		this._helpWindow.setText(text);

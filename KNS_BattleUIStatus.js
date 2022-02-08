@@ -1,58 +1,5 @@
 (function(){
 //===========================================
-// new KNS_BattleUIStatus
-//===========================================
-const KNS_BattleUIStatus = {};
-KNS_BattleUIStatus.changeValue = function(cur, old, max){
-	const curParam = this[cur];
-	const oldParam = this[old];
-	if (oldParam < curParam){
-		const offset = Math.max(max >> 5, 3);
-		this[old] = Math.min(oldParam + offset, curParam);
-	}else if(oldParam > curParam){
-		const offset = Math.max(max >> 5, 3);
-		this[old] = Math.max(oldParam - offset, curParam);
-	}else{
-		return false;
-	}
-	return true;
-}
-//===========================================
-// alias Game_Actor
-//===========================================
-Object.defineProperties(Game_Actor.prototype, {
-	oldHp:{
-		get: function(){ return this._oldHp || 0; },
-		set: function(n){ this._oldHp = n || 0; },
-		configuable: true,
-	},
-	oldMp:{
-		get: function(){ return this._oldMp || 0; },
-		set: function(n){ this._oldMp = n || 0; },
-		configuable: true,
-	},
-})
-
-Game_Actor.prototype.knsUpdateOldStatus = function(){
-	let hpChanged = KNS_BattleUIStatus.changeValue.call(this, '_hp', 'oldHp', this.mhp);
-	return KNS_BattleUIStatus.changeValue.call(this, '_mp', 'oldMp', this.mmp) || hpChanged;
-}
-
-const _Game_Actor_onBattleStart = Game_Actor.prototype.onBattleStart;
-Game_Actor.prototype.onBattleStart = function(){
-	this.oldHp = 0;
-	this.oldMp = 0;
-	_Game_Actor_onBattleStart.call(this);
-}
-
-const _Game_Actor_onBattleEnd = Game_Actor.prototype.onBattleEnd;
-Game_Actor.prototype.onBattleEnd = function(){
-	this.oldHp = 0;
-	this.oldMp = 0;
-	_Game_Actor_onBattleEnd.call(this);
-}
-
-//===========================================
 // alias Window_BattleStatus
 //===========================================
 Window_BattleStatus.prototype.standardPadding = function(){ return 0; };
@@ -70,7 +17,6 @@ Window_BattleStatus.prototype.fittingHeight = function(numLines) {
 };
 
 Window_BattleStatus.prototype.initialize = function() {
-	this._knsUpdateTiming = 0;
 	var width = this.windowWidth();
 	var height = this.windowHeight();
 	var y = Graphics.boxHeight - height - 2;
@@ -88,34 +34,6 @@ Window_BattleStatus.prototype.itemRect = function(index){
 	rect.y += Math.floor(index / this.maxCols());
 	return rect;
 };
-
-const _Window_BattleStatus_refresh = Window_BattleStatus.prototype.refresh;
-Window_BattleStatus.prototype.refresh = function(){
-	this._knsUpdateTiming = 0;
-	_Window_BattleStatus_refresh.call(this);
-}
-const _Window_BattleStatus_update = Window_BattleStatus.prototype.update;
-Window_BattleStatus.prototype.update = function(){
-	_Window_BattleStatus_update.call(this);
-	this.knsUpdateRefresh();
-}
-
-Window_BattleStatus.prototype.knsUpdateRefresh = function(){
-	if (this._knsUpdateTiming < 1){
-		this._knsUpdateTiming++;
-		return;
-	}
-	let changed = false;
-	$gameParty.battleMembers().forEach(function(actor){
-		if (actor.knsUpdateOldStatus() == true){ changed = true; }
-	});
-	if (changed){
-		this.refresh();
-	}else{
-		this._knsUpdateTiming = 0;
-	}
-};
-
 
 Window_BattleStatus.prototype.drawItem = function(index) {
 	const rect = this.itemRect(index);

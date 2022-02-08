@@ -72,8 +72,8 @@ Window_MenuStatus.prototype.drawItem = function(index){
 		this.contents.fontSize = 24;
 		let gaugeWidth = rect.width - 20;
 		let gaugeX = rect.x + (rect.width - gaugeWidth >> 1);
-		this.drawActorHp(actor, gaugeX, rect.y + 150, gaugeWidth);
-		this.drawActorMp(actor, gaugeX, rect.y + 187, gaugeWidth);
+		this.drawActorHp(actor, gaugeX, rect.y + 150, gaugeWidth, true);
+		this.drawActorMp(actor, gaugeX, rect.y + 187, gaugeWidth, true);
 		// job
 		this.knsDrawJobGauge(actor, rect.x, rect.y + 276, rect.width);
 		this.changePaintOpacity(true);
@@ -276,10 +276,12 @@ Scene_Menu.prototype.create = function() {
 	this._logSpriteset.y = 410;
 
 	if (Scene_Menu.KNS_CALLED_FROM_MAP){
+		$gameParty.knsSetOldStatusInit();
 		this.knsShowInfo($gameVariables.value(6));
 		Scene_Menu.KNS_CALLED_FROM_MAP = false;
 		this.knsSetBackgroundOpacity(128);
 	}else{
+		$gameParty.knsSetOldStatusMax();
 		this.setBackgroundOpacity(128);
 	}
 };

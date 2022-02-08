@@ -213,6 +213,12 @@ Scene_ItemBase.prototype.createActorWindow = function() {
 	this._actorWindow.setBackgroundType(1);
 };
 
+Scene_ItemBase.prototype.showSubWindow = function(window){
+	$gameParty.knsSetOldStatusMax();
+	window.show();
+	window.activate();
+};
+
 //================================================
 // alias Scene_Item
 //================================================

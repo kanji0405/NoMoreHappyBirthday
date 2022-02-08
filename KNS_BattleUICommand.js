@@ -3,7 +3,10 @@
 // new KNS_BattleUICommand
 //===========================================
 const KNS_BattleUICommand = {};
-KNS_BattleUICommand.KNS_COMMAND_COLORS = [
+KNS_BattleUICommand.PARTY_COMMAND_COLORS = [
+	'#c70a0a', '#2d36a8'
+];
+KNS_BattleUICommand.ACTOR_COMMAND_COLORS = [
 	'#c70a0a', '#2d36a8', '#169c2e', '#b59b18', '#7f10b3'
 ];
 
@@ -160,6 +163,28 @@ class Sprite_BattleCommands extends Sprite{
 			}
 		}
 	}
+	knsRichImage(sp, bmp, color){
+		const ctx = sp.bitmap._context;
+		ctx.save();
+		ctx.globalCompositeOperation = 'screen';
+		ctx.fillStyle = color;
+		ctx.fillRect(0, 0, bmp.width, bmp.height);
+
+		ctx.globalCompositeOperation = 'soft-light';
+		const grad = ctx.createLinearGradient(0, 0, 0, bmp.height);
+		grad.addColorStop(0,	'#fff8');
+		grad.addColorStop(0.25,	'#fff0');
+		grad.addColorStop(0.75,	'#0000');
+		grad.addColorStop(1.0,	'#000');
+		ctx.fillStyle = grad;
+		ctx.fillRect(0, 0, bmp.width, bmp.height);
+
+		// trim
+		ctx.globalCompositeOperation = 'destination-in';
+		ctx.drawImage(bmp._canvas, 0, 0);
+		ctx.restore();
+		sp.bitmap._setDirty();
+	}
 }
 
 //===========================================
@@ -193,14 +218,14 @@ class Sprite_PartyCommands extends Sprite_BattleCommands{
 			}else{
 				sp.bitmap = new Bitmap(bmp.width, height);
 				sp.bitmap.smooth = true;
-				sp.bitmap.fontSize = 26;
-				sp.bitmap.textColor = 'white';
-				sp.bitmap.outlineWidth = 3;
+				sp.bitmap.fontSize = 28;
+				sp.bitmap.textColor = '#fff';
+				sp.bitmap.outlineColor = '#000';
 			}
 			sp.bitmap.blt(bmp,0,height*i,bmp.width,height,0,0,bmp.width,height);
-			sp.bitmap.outlineColor = sp.bitmap.getPixel(0, 2);
 			const name = this._window.commandName(i);
-			sp.bitmap.drawText(name, iconWidth, 8, bmp.width - iconWidth - 12, 36);
+			sp.bitmap.drawText(name, iconWidth, 16, bmp.width - iconWidth - 12, 36);
+			this.knsRichImage(sp, bmp, KNS_BattleUICommand.PARTY_COMMAND_COLORS[i]);
 		}, this);
 	}
 	knsUpdateChildren(){
@@ -297,25 +322,7 @@ class Sprite_ActorCommands extends Sprite_BattleCommands{
 				}
 			}
 			sp.bitmap.drawText(commandName, x, y, width, 28, align);
-			const ctx = sp.bitmap._context;
-			ctx.save();
-			ctx.globalCompositeOperation = 'screen';
-			ctx.fillStyle = KNS_BattleUICommand.KNS_COMMAND_COLORS[i];
-			ctx.fillRect(0, 0, bmp.width, bmp.height);
-
-			ctx.globalCompositeOperation = 'soft-light';
-			const grad = ctx.createLinearGradient(0, 0, 0, bmp.height);
-			grad.addColorStop(0, '#fff8');
-			grad.addColorStop(0.25, '#fff0');
-			grad.addColorStop(0.75, '#0000');
-			grad.addColorStop(1.0, '#000');
-			ctx.fillStyle = grad;
-			ctx.fillRect(0, 0, bmp.width, bmp.height);
-
-			// trim
-			ctx.globalCompositeOperation = 'destination-in';
-			ctx.drawImage(bmp._canvas, 0, 0);
-			ctx.restore();
+			this.knsRichImage(sp, bmp, KNS_BattleUICommand.ACTOR_COMMAND_COLORS[i]);
 			sp._knsToneCnt = [32, 32, 32, 0];
 			sp.setColorTone(sp._knsToneCnt);
 		}, this);

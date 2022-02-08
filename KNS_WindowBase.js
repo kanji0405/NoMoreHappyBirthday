@@ -327,48 +327,6 @@ Window_Base.prototype.knsDrawJobGauge = function(actor, x, y, width, roleId){
 	}
 }
 
-// gauge
-Window_Base.prototype.drawActorHp = function(actor, x, y, width, needOld) {
-	width = width || 186;
-	const color1 = this.hpGaugeColor1();
-	const color2 = this.hpGaugeColor2();
-	let cur = needOld ? actor.oldHp : actor.hp;
-	let max = actor.mhp || 1;
-	this.drawGauge(x, y, width, cur / max, color1, color2);
-	this.changeTextColor(color2);
-	this.contents.fontSize -= 4;
-	this.drawText(KNS_TERMS.STATUS_PARAM_SHORT[0], x, y, 44);
-	this.contents.fontSize += 4;
-	this.drawCurrentAndMax(cur, max, x, y, width, this.hpColor(actor), this.normalColor());
-};
-
-Window_Base.prototype.drawActorMp = function(actor, x, y, width, needOld) {
-	width = width || 186;
-	const color1 = this.mpGaugeColor1();
-	const color2 = this.mpGaugeColor2();
-	let cur = needOld ? actor.oldMp : actor.mp;
-	let max = actor.mmp || 1;
-	this.drawGauge(x, y, width, cur / max, color1, color2);
-	this.changeTextColor(color2);
-	this.contents.fontSize -= 4;
-	this.drawText(KNS_TERMS.STATUS_PARAM_SHORT[1], x, y, 44);
-	this.contents.fontSize += 4;
-	this.drawCurrentAndMax(cur, max, x, y, width, this.mpColor(actor), this.normalColor());
-};
-
-Window_Base.prototype.drawActorTp = function(actor, x, y, width) {
-    width = width || 96;
-    var color1 = this.tpGaugeColor1();
-    var color2 = this.tpGaugeColor2();
-    this.drawGauge(x, y, width, actor.tpRate(), color1, color2);
-    this.changeTextColor(color2);
-	this.contents.fontSize -= 4;
-    this.drawText(KNS_TERMS.STATUS_PARAM_SHORT[2], x, y, 44);
-	this.contents.fontSize += 4;
-    this.changeTextColor(this.tpColor(actor));
-    this.drawText(actor.tp, x + width - 64, y, 64, 'right');
-};
-
 //================================================
 // alias Window_Command
 //================================================
