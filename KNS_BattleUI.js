@@ -63,7 +63,7 @@ Scene_Battle.prototype.createHelpWindow = function() {
     this._helpWindow.visible = false;
     this.addWindow(this._helpWindow);
 
-	const bmp = new Bitmap(this._helpWindow.width - 20, this._helpWindow.height);
+	const bmp = new Bitmap(this._helpWindow.width, this._helpWindow.height);
 	let pad = 96;
 	let wid = bmp.width - pad;
 	const color1 = this._helpWindow.dimColor1();

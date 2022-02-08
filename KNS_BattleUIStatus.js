@@ -16,14 +16,8 @@ Window_BattleStatus.prototype.initialize = function() {
 Window_BattleStatus.prototype.standardPadding = function(){ return 12; };
 Window_BattleStatus.prototype.numVisibleRows = function(){ return 4; };
 
-Window_BattleStatus.prototype.itemRect = function(index){
-	const rect = Window_Selectable.prototype.itemRect.call(this, index);
-	rect.y += 24;
-	return rect;
-};
-
 Window_BattleStatus.prototype.windowWidth = function() {
-	return Graphics.boxWidth - 320;
+	return Graphics.boxWidth - 280;
 };
 
 Window_BattleStatus.prototype.windowHeight = function() {
@@ -36,7 +30,16 @@ Window_BattleStatus.prototype.drawItem = function(index) {
 	this.drawGaugeArea(this.gaugeAreaRect(index), actor);
 };
 
-Window_BattleStatus.prototype.gaugeAreaWidth = function(){ return 330; };
+Window_BattleStatus.prototype.itemRect = function(index){
+	const rect = Window_Selectable.prototype.itemRect.call(this, index);
+	rect.x += index * 8;
+	rect.y += 24;
+	rect.width -= 40;
+	return rect;
+};
+
+Window_BattleStatus.prototype.gaugeAreaWidth = function(){ return 300; };
+
 Window_BattleStatus.prototype.basicAreaRect = function(index) {
 	var rect = this.itemRectForText(index);
 	rect.width -= this.gaugeAreaWidth() + 15;
@@ -56,20 +59,32 @@ Window_BattleStatus.prototype.drawBasicArea = function(rect, actor) {
 	this.drawActorIcons(actor, rect.x + 156, rect.y, rect.width - 156);
 };
 
-Window_BattleStatus.prototype.drawGaugeArea = function(rect, actor) {
-	this.drawActorHp(actor, rect.x + 0, rect.y, 201);
-	this.drawActorMp(actor, rect.x + 216,  rect.y, 114);
+Window_BattleStatus.prototype.drawGaugeArea = function(rect, actor){
+	const gaugeX = rect.width - 8 >> 1;
+	const gaugeWidth = gaugeX - 10;
+	this.drawActorHp(actor, rect.x, rect.y, gaugeWidth);
+	this.drawActorMp(actor, rect.x + gaugeX,  rect.y, gaugeWidth);
 };
 
 Window_BattleStatus.prototype.refreshDimmerBitmap = function() {
 	if (this._dimmerSprite) {
 		const bmp = this._dimmerSprite.bitmap;
-		const w = this.width;
+		const w = Graphics.width;
 		const h = this.height;
+		const m = 96;
 		bmp.resize(w, h);
-		bmp.knsDownerGradient(0, 0, w, h, 24, this.dimColor1(), this.dimColor2());
+		const padX = w-m;
+		const ah = 28;
+		const accent1 = '#0000ffaa';
+		const accent2 = '#0000ff00';
+		bmp.fillRect(0,1,padX,ah-1,accent1);
+		bmp.gradientFillRect(padX,1,m,ah-1,accent1,accent2);
+
+		const color1 = this.dimColor1();
+		const color2 = this.dimColor2();
+		bmp.fillRect(0,ah,padX,h,color1);
+		bmp.gradientFillRect(padX,ah,m,h,color1,color2);
 		this._dimmerSprite.setFrame(0, 0, w, h);
-		this._dimmerSprite.scale.x = 2;
 	}
 };
 

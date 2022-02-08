@@ -25,12 +25,49 @@ Window_BattleItem.prototype.isEnabled = function(item){
 	return !item || _Window_BattleItem_isEnabled.call(this, item);
 }
 
+
+//===========================================
+// local KNS_BattleUIEquip
+//===========================================
+const KNS_BattleUIEquip = {};
+KNS_BattleUIEquip.setDimmer = function(klass, edgeFade){
+	klass.prototype.refreshDimmerBitmap = function() {
+		if (this._dimmerSprite) {
+			var bitmap = this._dimmerSprite.bitmap;
+			var w = this.width;
+			var h = this.height;
+			var c1 = this.dimColor1();
+			bitmap.resize(w, h);
+			if (edgeFade){
+				const m = 96;
+				bitmap.fillRect(0, 0, w-m, h, c1);
+				bitmap.gradientFillRect(w-m, 0, m, h, c1, this.dimColor2());
+			}else{
+				bitmap.fillRect(0, 0, w, h, c1);
+			}
+			this._dimmerSprite.setFrame(0, 0, w, h);
+		}
+	};
+}
+
+//===========================================
+// new Window_BattleEquipSlot
+//===========================================
+class Window_BattleEquipStatus extends Window_EquipStatus{}
+KNS_BattleUIEquip.setDimmer(Window_BattleEquipStatus);
+
+//===========================================
+// new Window_BattleEquipItem
+//===========================================
+class Window_BattleEquipItem extends Window_EquipItem{}
+KNS_BattleUIEquip.setDimmer(Window_BattleEquipItem, true);
+
 //===========================================
 // new Window_BattleEquipSlot
 //===========================================
 class Window_BattleEquipSlot extends Window_EquipSlot{
 	constructor(help, status, item){
-		super(status.width, help.height, Graphics.width - status.width, 280);
+		super(status.width, help.height, Graphics.width - status.width+10, 280);
 		this.setStatusWindow(status);
 		this.setHelpWindow(help);
 		this.setItemWindow(item);
@@ -77,6 +114,7 @@ class Window_BattleEquipSlot extends Window_EquipSlot{
 		return super.isEnabled(index);
 	};
 }
+KNS_BattleUIEquip.setDimmer(Window_BattleEquipSlot, true);
 
 
 //===========================================
@@ -90,11 +128,11 @@ Scene_Battle.prototype.createAllWindows = function(){
 };
 
 Scene_Battle.prototype.knsCreateEquipSlotWindow = function(){
-    this._knsEquipStatusWindow = new Window_EquipStatus(0, this._helpWindow.height);
+    this._knsEquipStatusWindow = new Window_BattleEquipStatus(0, this._helpWindow.height);
     this.addWindow(this._knsEquipStatusWindow);
 
 	let wy = this._knsEquipStatusWindow.y + this._knsEquipStatusWindow.height;
-	this._knsEquipItemWindow = new Window_EquipItem(
+	this._knsEquipItemWindow = new Window_BattleEquipItem(
 		0, wy, Graphics.boxWidth, Graphics.boxHeight - wy);
 	this._knsEquipItemWindow.setHandler('ok',		this.onKnsEquipItemOk.bind(this));
 	this._knsEquipItemWindow.setHandler('cancel',	this.onKnsEquipItemCancel.bind(this));

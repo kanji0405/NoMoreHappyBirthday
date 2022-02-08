@@ -1,4 +1,27 @@
 (function(){
+//============================================
+// alias Game_Actor
+//============================================
+// normal attack
+Game_Actor.prototype.attackSkillId = function() {
+	let magicAttack, entireAttack;
+	this.equips().forEach(function(item){
+		if (item){
+			if (item.meta.magicAttack){ magicAttack = true; }
+			if (item.meta.entireAttack){ entireAttack = true; }
+		}
+	}, this);
+	if (magicAttack && entireAttack){
+		return 13;
+	}else if(entireAttack){
+		return 12;
+	}else if(magicAttack){
+		return 11;
+	}else{
+		return 1;
+	}
+};
+
 //===========================================
 // alias Game_Action
 //===========================================
@@ -67,8 +90,11 @@ class Window_KnsBattleSelect extends Window_Selectable{
 			const bmp = this._dimmerSprite.bitmap;
 			const w = this.width;
 			const h = this.height;
+			const m = 24;
 			bmp.resize(w, h);
-			bmp.knsUpperGradient(0, 0, w, h, 24, this.dimColor1(), this.dimColor2());
+			const color1 = this.dimColor1();
+			const color2 = this.dimColor2();
+			bmp.knsUpperGradient(0, 0, w, h, m, color1, color2);
 			this._dimmerSprite.setFrame(0, 0, w, h);
 			this._dimmerSprite.scale.x = 1.5;
 		}
@@ -201,6 +227,25 @@ class Window_KnsBattleActor extends Window_KnsBattleSelect{
 			super.selectSprite(actor.actor().index(), processOk);
 		}
 	}
+
+	cursorLeft(){
+		const max = this.maxItems();
+		if (max <= 2){
+			super.cursorLeft();
+		}else{
+			this.select((this.index() + max - 2) % max);
+		}
+	}
+	cursorRight(){
+		const max = this.maxItems();
+		if (max <= 2){
+			super.cursorRight();
+		}else{
+			this.select((this.index() + 2) % max);
+		}
+	}
+	cursorUp(){ super.cursorLeft(); }
+	cursorDown(){ super.cursorRight(); }
 }
 
 //===========================================
@@ -242,7 +287,7 @@ Spriteset_Battle.prototype.knsClickedCharacter = function(){
 		function(sp){ return clicked(sp, '_character'); }, this);
 	const enemies = this._enemySprites.filter(
 		function(sp){ return clicked(sp, '_enemy'); }, this);
-	return enemies.concat(actors)[0];
+	return enemies.concat(actors).sort(function(a, b){ return a.y - b.y; })[0];
 }
 
 //===========================================
@@ -347,6 +392,13 @@ Scene_Battle.prototype.onSelectAction = function(){
 		this.selectActorSelection();
 	}
 }
+
+// normal attack
+Scene_Battle.prototype.commandAttack = function(){
+	BattleManager.inputtingAction().setAttack();
+	this._helpWindow.hide();
+	this.onSelectAction();
+};
 
 // start on actor/enemy window
 Scene_Battle.prototype.selectEnemySelection = function() {

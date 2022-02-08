@@ -66,37 +66,4 @@ Game_Battler.prototype.calcKnsDamage = function(atk, def, add){
 	const rate = Game_Action.KNS_CRITICAL_RATE * Game_Action.KNS_ELEMENT_RATE;
 	return atk * rate - def + (add || 0);
 }
-
-
-//============================================
-// alias Game_Actor
-//============================================
-// normal attack
-Game_Actor.prototype.attackSkillId = function() {
-	let magicAttack, entireAttack;
-	this.equips().forEach(function(item){
-		if (item){
-			if (item.meta.magicAttack){ magicAttack = true; }
-			if (item.meta.entireAttack){ entireAttack = true; }
-		}
-	}, this);
-	if (magicAttack && entireAttack){
-		return 13;
-	}else if(entireAttack){
-		return 12;
-	}else if(magicAttack){
-		return 11;
-	}else{
-		return 1;
-	}
-};
-
-//============================================
-// alias Scene_Battle
-//============================================
-Scene_Battle.prototype.commandAttack = function(){
-	BattleManager.inputtingAction().setAttack();
-	this._helpWindow.hide();
-	this.onSelectAction();
-};
 })();

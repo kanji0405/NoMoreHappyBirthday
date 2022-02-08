@@ -457,7 +457,10 @@ class Spriteset_RoleCharacters extends Sprite{
 
 		const ctx = this._lightSprite.bitmap._context;
 		if (ctx){
-			ctx.fillStyle = 'yellow';
+			const grad = ctx.createLinearGradient(0, 0, 0, 128);
+			grad.addColorStop(0.0, '#ffff0000');
+			grad.addColorStop(1.0, '#ffff00ff');
+			ctx.fillStyle = grad;
 			ctx.beginPath();
 			let pad = 0.1;
 			ctx.ellipse(width, height, width, radius, 0, -pad, Math.PI+pad);
