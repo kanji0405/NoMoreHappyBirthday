@@ -138,8 +138,6 @@ KNS_TERMS = {
 	BATTLE_ACTOR_ITEM:		'アイテム',
 	BATTLE_ACTOR_PARTY:		'パーティ',
 
-	BATTLE_PARTY_FIGHT_TEXT:	'コマンドを選ぶ',
-	BATTLE_PARTY_ESCAPE_TEXT:	'戦闘から逃走を試みる',
 	BATTLE_ACTOR_SKILL_TEXT:	'覚えているスキルを使う',
 	BATTLE_ACTOR_ITEM_TEXT:		'持っているアイテムを使う',
 	BATTLE_ACTOR_PARTY_TEXT:	'逃走などのパーティコマンドを選択する',

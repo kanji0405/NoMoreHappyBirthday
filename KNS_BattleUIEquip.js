@@ -32,18 +32,19 @@ Window_BattleItem.prototype.isEnabled = function(item){
 const KNS_BattleUIEquip = {};
 KNS_BattleUIEquip.setDimmer = function(klass, edgeFade){
 	klass.prototype.refreshDimmerBitmap = function() {
-		if (this._dimmerSprite) {
+		if (this._dimmerSprite){
 			var bitmap = this._dimmerSprite.bitmap;
 			var w = this.width;
 			var h = this.height;
 			var c1 = this.dimColor1();
+			h -= 2;
 			bitmap.resize(w, h);
 			if (edgeFade){
 				const m = 96;
-				bitmap.fillRect(0, 0, w-m, h, c1);
+				bitmap.fillRect(0, 1, w-m, h, c1);
 				bitmap.gradientFillRect(w-m, 0, m, h, c1, this.dimColor2());
 			}else{
-				bitmap.fillRect(0, 0, w, h, c1);
+				bitmap.fillRect(0, 1, w, h, c1);
 			}
 			this._dimmerSprite.setFrame(0, 0, w, h);
 		}

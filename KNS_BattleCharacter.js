@@ -276,6 +276,7 @@ KNS_BattleCharacter.setCursor = function(klass, name){
 
 	const _klass_initialize = klass.prototype.initialize;
 	klass.prototype.initialize = function(){
+		this._knsIsBattler = true;
 		this.knsCreateArrow();
 		_klass_initialize.apply(this, arguments);
 	}
@@ -476,6 +477,7 @@ Spriteset_Battle.prototype.update = function() {
     _Spriteset_Battle_update.call(this);
 	$gameBattleActors.update();
     this.updateKnsFadeIn();
+	this.updateKnsZIndex();
 };
 Spriteset_Battle.prototype.updateKnsFadeIn = function(){
 	if (this._knsFadeInCnt < this.getKnsFadeInMax()){
@@ -505,4 +507,16 @@ Spriteset_Battle.prototype.createActors = function(){
 		this._battleField.addChild(this._actorSprites[i]);
 	}
 };
+
+Spriteset_Battle.prototype.updateKnsZIndex = function(){
+	let index = this._battleField.children.findIndex(function(sp){
+		return sp._knsIsBattler;
+	});
+	if (index != -1){
+		const concat = this._actorSprites.concat(this._enemySprites);
+		this._battleField.removeChild(...concat);
+		concat.sort(function(a, b){ return b.y - a.y; }).forEach(
+			function(sp){ this._battleField.addChildAt(sp, index); }, this);
+	}
+}
 })();

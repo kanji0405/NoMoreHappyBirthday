@@ -18,6 +18,11 @@ KNS_BattleUICommand.setSprites = function(proto){
 		this.y = Graphics.height;
 		if (this._knsSprites) this._knsSprites.refresh();
 	}
+	proto.drawItem = function(index){}
+
+	proto.onTouch = function(){}
+};
+KNS_BattleUICommand.setHelp = function(proto){
 	const _activate = proto.activate;
 	proto.activate = function(){
 		_activate.call(this);
@@ -33,9 +38,6 @@ KNS_BattleUICommand.setSprites = function(proto){
 		_close.call(this);
 		if (this._helpWindow) this._helpWindow.hide();
 	}
-	proto.drawItem = function(index){}
-
-	proto.onTouch = function(){}
 
 	const oldCommandName = proto.commandName;
 	proto.commandName = function(i){
@@ -55,21 +57,22 @@ KNS_BattleUICommand.setSprites = function(proto){
 			this._helpWindow.setText(KNS_TERMS[name + '_TEXT']);
 		}
 	}
-};
+}
 //===========================================
 // alias Window_PartyCommand
 //===========================================
 KNS_BattleUICommand.setSprites(Window_PartyCommand.prototype);
 Window_PartyCommand.prototype.numVisibleRows = function(){ return 2; };
 Window_PartyCommand.prototype.makeCommandList = function(){
-	this.addCommand('BATTLE_PARTY_FIGHT', 'fight');
-	this.addCommand('BATTLE_PARTY_ESCAPE', 'escape', BattleManager.canEscape());
+	this.addCommand(KNS_TERMS.BATTLE_PARTY_FIGHT, 'fight');
+	this.addCommand(KNS_TERMS.BATTLE_PARTY_ESCAPE, 'escape', BattleManager.canEscape());
 };
 
 //===========================================
 // alias Window_ActorCommand
 //===========================================
 KNS_BattleUICommand.setSprites(Window_ActorCommand.prototype);
+KNS_BattleUICommand.setHelp(Window_ActorCommand.prototype);
 Window_ActorCommand.prototype.numVisibleRows = function(){ return 4; };
 Window_ActorCommand.prototype.makeCommandList = function() {
 	if (this._actor){
@@ -165,10 +168,10 @@ class Sprite_BattleCommands extends Sprite{
 class Sprite_PartyCommands extends Sprite_BattleCommands{
 	knsCommandSize(){ return 2; }
 	knsCreateSprites(){
-		this._knsBitmap = ImageManager.loadSystem('commandParty');
+		this._knsBitmap = ImageManager.reserveSystem('commandParty');
 		const size = this.knsCommandSize();
 		this.x = Graphics.width;
-		this.y = 420;
+		this.y = 427;
 		for (let i = 0; i < size; i++){
 			const sp = new Sprite();
 			sp.y = i * 90;
@@ -183,6 +186,7 @@ class Sprite_PartyCommands extends Sprite_BattleCommands{
 		const height = bmp.height / size;
 		const iconWidth = 55;
 		this._commands.forEach(function(sp, i){
+			sp.x = 300;
 			sp.opacity = 192;
 			if (sp.bitmap){
 				sp.bitmap.clear();
@@ -190,10 +194,11 @@ class Sprite_PartyCommands extends Sprite_BattleCommands{
 				sp.bitmap = new Bitmap(bmp.width, height);
 				sp.bitmap.smooth = true;
 				sp.bitmap.fontSize = 26;
-				sp.bitmap.outlineColor = 'white';
+				sp.bitmap.textColor = 'white';
+				sp.bitmap.outlineWidth = 3;
 			}
 			sp.bitmap.blt(bmp,0,height*i,bmp.width,height,0,0,bmp.width,height);
-			sp.bitmap.textColor = sp.bitmap.getPixel(0, 0);
+			sp.bitmap.outlineColor = sp.bitmap.getPixel(0, 2);
 			const name = this._window.commandName(i);
 			sp.bitmap.drawText(name, iconWidth, 8, bmp.width - iconWidth - 12, 36);
 		}, this);
@@ -201,13 +206,10 @@ class Sprite_PartyCommands extends Sprite_BattleCommands{
 	knsUpdateChildren(){
 		const index = this._window.index();
 		this._commands.forEach(function(sp, i){
-			if (i == index){
-				sp.x = Math.max(0, sp.x - 2);
-				sp.opacity = Math.min(255, sp.opacity + 5);
-			}else{
-				sp.x = Math.min(20, sp.x + 2);
-				sp.opacity = Math.max(192, sp.opacity - 5);
-			}
+			const maxX = i == index ? 0 : 20;
+			sp.x = (maxX - sp.x >> 2) + sp.x;
+			sp.opacity = i == index ?
+				Math.min(255, sp.opacity + 5) : Math.max(192, sp.opacity - 5);
 		}, this);
 	}
 }
@@ -234,11 +236,11 @@ class Sprite_ActorCommands extends Sprite_BattleCommands{
 		}
 	}
 	knsCreateSprites(){
-		this.x = 666;
+		this.x = 670;
 		this.y = 498;
 		for (let i = 0; i < this._window.numVisibleRows(); i++){
 			const sp = new Sprite();
-			sp._knsBitmap = ImageManager.loadSystem('command' + i);
+			sp._knsBitmap = ImageManager.reserveSystem('command' + i);
 			sp._knsToneCnt = [0, 0, 0, 0];
 			sp.anchor.x = sp.anchor.y = 0.5;
 			switch(i){

@@ -104,27 +104,28 @@ Window_Base.prototype.getCircleFace = function(name, index){
 	const cvs = document.createElement('canvas');
 	cvs.width = Window_Base._faceWidth;
 	cvs.height = Window_Base._faceHeight;
-	const ctx = cvs.getContext('2d');
-	ctx.fillStyle = 'white';
-	ctx.beginPath();
-	const math = Math.PI*2;
-	ctx.arc(cvs.width >> 1, cvs.height >> 1, 70, 0, math);
-	ctx.fill();
-	ctx.globalCompositeOperation = 'source-in';
-	ctx.drawImage(ImageManager.loadFace(name).canvas, 
-		cvs.width * (index % 4), cvs.height * (index >> 2), cvs.width, cvs.height, 
-		0, 0, cvs.width, cvs.height
-	);
-	ctx.closePath();
+	const bmp = ImageManager.loadFace(name);
+	if (bmp.width > 0){
+		const ctx = cvs.getContext('2d');
+		ctx.fillStyle = 'white';
+		const math = Math.PI*2;
+		ctx.arc(cvs.width >> 1, cvs.height >> 1, 70, 0, math);
+		ctx.fill();
+		ctx.globalCompositeOperation = 'source-in';
+		ctx.drawImage(bmp._canvas, 
+			cvs.width * (index % 4), cvs.height * (index >> 2), cvs.width, cvs.height, 
+			0, 0, cvs.width, cvs.height
+		);
+		ctx.globalCompositeOperation = 'source-over';
+	}
 	return cvs;
 }
 
 Window_Base.prototype.drawCircleFace = function(name, index, x, y, w, h){
 	const cvs = this.getCircleFace(name, index);
-	this.contents._context.drawImage(
-		cvs, 0, 0, cvs.width, cvs.height, 
-		x, y, w || cvs.width, h || cvs.height
-	);
+	this.contents._context.drawImage(cvs, 0, 0, cvs.width, cvs.height,
+		x, y, w || cvs.width, h || cvs.height);
+	this.contents._setDirty();
 }
 
 Window_Base.prototype.drawCircleBar = function(
@@ -327,34 +328,32 @@ Window_Base.prototype.knsDrawJobGauge = function(actor, x, y, width, roleId){
 }
 
 // gauge
-Window_Base.prototype.drawActorHp = function(actor, x, y, width) {
-    width = width || 186;
-    var color1 = this.hpGaugeColor1();
-    var color2 = this.hpGaugeColor2();
-    this.drawGauge(x, y, width, actor.hpRate(), color1, color2);
-    this.changeTextColor(color2);
+Window_Base.prototype.drawActorHp = function(actor, x, y, width, needOld) {
+	width = width || 186;
+	const color1 = this.hpGaugeColor1();
+	const color2 = this.hpGaugeColor2();
+	let cur = needOld ? actor.oldHp : actor.hp;
+	let max = actor.mhp || 1;
+	this.drawGauge(x, y, width, cur / max, color1, color2);
+	this.changeTextColor(color2);
 	this.contents.fontSize -= 4;
-    this.drawText(KNS_TERMS.STATUS_PARAM_SHORT[0], x, y, 44);
+	this.drawText(KNS_TERMS.STATUS_PARAM_SHORT[0], x, y, 44);
 	this.contents.fontSize += 4;
-    this.drawCurrentAndMax(
-		actor.hp, actor.mhp, x, y, width,
-		this.hpColor(actor), this.normalColor()
-	);
+	this.drawCurrentAndMax(cur, max, x, y, width, this.hpColor(actor), this.normalColor());
 };
 
-Window_Base.prototype.drawActorMp = function(actor, x, y, width) {
-    width = width || 186;
-    var color1 = this.mpGaugeColor1();
-    var color2 = this.mpGaugeColor2();
-    this.drawGauge(x, y, width, actor.mpRate(), color1, color2);
-    this.changeTextColor(color2);
+Window_Base.prototype.drawActorMp = function(actor, x, y, width, needOld) {
+	width = width || 186;
+	const color1 = this.mpGaugeColor1();
+	const color2 = this.mpGaugeColor2();
+	let cur = needOld ? actor.oldMp : actor.mp;
+	let max = actor.mmp || 1;
+	this.drawGauge(x, y, width, cur / max, color1, color2);
+	this.changeTextColor(color2);
 	this.contents.fontSize -= 4;
-    this.drawText(KNS_TERMS.STATUS_PARAM_SHORT[1], x, y, 44);
+	this.drawText(KNS_TERMS.STATUS_PARAM_SHORT[1], x, y, 44);
 	this.contents.fontSize += 4;
-    this.drawCurrentAndMax(
-		actor.mp, actor.mmp, x, y, width,
-        this.mpColor(actor), this.normalColor()
-	);
+	this.drawCurrentAndMax(cur, max, x, y, width, this.mpColor(actor), this.normalColor());
 };
 
 Window_Base.prototype.drawActorTp = function(actor, x, y, width) {
