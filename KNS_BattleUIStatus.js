@@ -26,12 +26,16 @@ Window_BattleStatus.prototype.initialize = function() {
 };
 
 Window_BattleStatus.prototype.itemRect = function(index){
+	let fakeIndex = index;
 	switch(index){
-		case 1: index = 2; break;
-		case 2: index = 1; break;
+		case 1: fakeIndex = 2; break;
+		case 2: fakeIndex = 1; break;
 	}
-	const rect = Window_Selectable.prototype.itemRect.call(this, index);
-	rect.y += Math.floor(index / this.maxCols());
+	const rect = Window_Selectable.prototype.itemRect.call(this, fakeIndex);
+	rect.y += Math.floor(fakeIndex / this.maxCols());
+	if (index % 2 == 0 && index + 1 == this.maxItems()){
+		rect.y += rect.height >> 1;
+	}
 	return rect;
 };
 
@@ -154,14 +158,6 @@ Scene_Battle.prototype.start = function(){
 	this._statusWindow.y += 1;
 	this._statusWindow.refresh();
 }
-Scene_Battle.prototype.startPartyCommandSelection = function() {
-	this.refreshStatus();
-	// this._statusWindow.deselect();
-	this._statusWindow.open();
-	this._actorCommandWindow.close();
-	this._partyCommandWindow.setup();
-};
-
 Scene_Battle.prototype.stop = function() {
 	Scene_Base.prototype.stop.call(this);
 	if (this.needsSlowFadeOut()) {
@@ -183,4 +179,11 @@ Scene_Battle.prototype.updateStatusWindow = function(){
 Scene_Battle.prototype.updateWindowPositions = function(){
 };
 
+const _Scene_Battle_startPartyCommandSelection = Scene_Battle.prototype.startPartyCommandSelection;
+Scene_Battle.prototype.startPartyCommandSelection = function() {
+	const old = this._statusWindow.deselect;
+	this._statusWindow.deselect = function(){};
+	_Scene_Battle_startPartyCommandSelection.call(this);
+	this._statusWindow.deselect = old;
+};
 })();

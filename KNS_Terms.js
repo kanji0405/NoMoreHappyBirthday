@@ -132,6 +132,13 @@ KNS_TERMS = {
 		'', '武器', '盾', '頭', '体', '装飾', 'アビリティ'
 	],
 
+	BATTLE_PREEMPTIVE: '先制攻撃だ！',
+	BATTLE_SURPRISE: 'ふいうちだ！',
+	BATTLE_VICTORY: '勝利は%sにもたらされた！',
+	BATTLE_DEFEAT: '全滅した……',
+	BATTLE_ESCAPE: '逃げ出した！',
+	BATTLE_ESCAPE_FAILURE: '逃げられなかった！',
+
 	BATTLE_PARTY_FIGHT:		'戦う',
 	BATTLE_PARTY_ESCAPE:	'逃げる',
 	BATTLE_ACTOR_SKILL:		'スキル',

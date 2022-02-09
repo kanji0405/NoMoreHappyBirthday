@@ -2,15 +2,10 @@
 //============================================
 // alias Game_Battler
 //============================================
-Game_Battler.KNS_MAX_CTB_GAUGE = 5000;
 Object.defineProperties(Game_Battler.prototype, {
 	ctbGauge: {
 		get: function(){ return this._ctbGauge || 0; },
-		set: function(n){
-			this._ctbGauge = Math.max(
-				Math.floor(n), Game_Battler.KNS_MAX_CTB_GAUGE
-			);
-		},
+		set: function(n){ this._ctbGauge = Math.floor(n); },
 		configurable: true
 	},
 });
@@ -34,246 +29,325 @@ Game_Battler.prototype.die = function() {
 };
 
 //============================================
+// alias Game_Unit
+//============================================
+Game_Unit.prototype.knsMaxCtbGauge = function(){
+	return ($gameParty.agility() + $gameTroop.agility() << 5) || 0;
+}
+
+Game_Unit.prototype.knsSetCtbMax = function(){
+	const max = $gameParty.knsMaxCtbGauge();
+	this.members().forEach(function(member){ member.ctbGauge = max; }, this);
+}
+
+Game_Unit.prototype.knsProcessCtb = function(){
+	const maxMembers = [];
+	const max = $gameParty.knsMaxCtbGauge();
+	this.members().forEach(function(member){
+		if (member.ctbGauge >= max){
+			maxMembers.push(member);
+		}else if(member.isAlive()){
+			member.ctbGauge += member.agi + (Math.randomInt(5) - 5 << 1);
+		}
+	}, this);
+	return maxMembers;
+}
+//============================================
+// alias BattleManager
+//============================================
+BattleManager.update = function() {
+	if (!this.isBusy() && !this.updateEvent()) {
+		switch (this._phase) {
+		// - ctb processing
+		case 'knsCtb':
+			this.knsUpdateCtb();
+			break;
+		// original
+		case 'start':
+			this.startInput();
+			break;
+		case 'turn':
+			this.updateTurn();
+			break;
+		case 'action':
+			this.updateAction();
+			break;
+		case 'turnEnd':
+			this.updateTurnEnd();
+			break;
+		case 'battleEnd':
+			this.updateBattleEnd();
+			break;
+		}
+	}
+};
+
+BattleManager.startInput = function(){
+	this._phase = 'knsCtb';
+}
+
+BattleManager.knsUpdateCtb = function(){
+	const maxMembers = $gameTroop.knsProcessCtb().concat($gameParty.knsProcessCtb());
+	if (maxMembers.length > 0){
+		this.knsStartInput(maxMembers[Math.randomInt(maxMembers.length)]);
+	}
+}
+
+BattleManager.knsStartInput = function(battler){
+	battler.ctbGauge = -1;
+	battler.onTurnEnd();
+	this._logWindow.displayAutoAffectedStatus(battler);
+	this._logWindow.displayRegeneration(battler);
+
+	battler.makeActions();
+	if (battler.isActor() && battler.canInput()){
+		AudioManager.playSe({name: 'Decision2', volume: 100, pitch: 100, pan: 0});
+		this._phase = 'input';
+		this._actorIndex = battler.index();
+		this._knsActorIndex = this._actorIndex; // パーティコマンドからの復帰
+		battler.setActionState('inputting');
+	}else{
+		this.startTurn();
+	}
+}
+
+BattleManager.selectPreviousCommand = function() {
+	this.changeActor(-1, 'undecided');
+};
+
+BattleManager.selectNextCommand = function(){
+	if (this._actorIndex == -1){
+		this._actorIndex = this._knsActorIndex;
+	}else{
+		this.startTurn();
+	}
+};
+
+BattleManager.makeActionOrders = function() {
+	const battlers = $gameParty.members().concat($gameTroop.members());
+	battlers.forEach(function(battler){ battler.makeSpeed(); });
+	battlers.sort(function(a, b){ return b.speed() - a.speed(); });
+	this._actionBattlers = battlers;
+};
+
+BattleManager.endTurn = function() {
+	this._phase = 'turnEnd';
+	this._preemptive = false;
+	this._surprise = false;
+	this.refreshStatus();
+	if (this.isForcedTurn()){ this._turnForced = false; }
+};
+
+//============================================
+// new Spriteset_KnsCtb
+//============================================
+class Spriteset_KnsCtb extends Sprite{
+	constructor(){
+		super();
+		this._party = [];
+		this._partyId = [];
+		this._troop = [];
+		this._troopId = [];
+		this._iconSprites = [];
+		this.bitmap = this.knsCreateBaseBitmap();
+		this.update();
+		this.opacity = 0;
+	}
+	knsCreateBaseBitmap(){
+		let wid = Graphics.width;
+		let hei = 16;
+		const bmp = new Bitmap(wid, hei);
+		const ctx = bmp._context;
+		ctx.lineWidth = 2;
+		ctx.beginPath();
+		hei -= 1;
+		ctx.moveTo(0, 0);
+		ctx.lineTo(wid, 0);
+		ctx.lineTo(wid, hei);
+		ctx.lineTo(0, 4);
+		ctx.closePath();
+		ctx.strokeStyle = 'white';
+		ctx.stroke();
+		const grad = ctx.createLinearGradient(0,0,wid,0);
+		grad.addColorStop(0.0, 'red');
+		grad.addColorStop(0.4, 'purple');
+		grad.addColorStop(0.8, 'blue');
+		ctx.fillStyle = grad;
+		ctx.fill();
+		bmp._setDirty();
+		return bmp;
+	}
+	update(){
+		super.update();
+		this.knsUpdateOpacity();
+		this.knsUpdateChange();
+		this.knsUpdateChildren();
+	}
+	knsUpdateOpacity(){
+		const scene = SceneManager._scene;
+		const partyWindow = scene._partyCommandWindow;
+		let to = 128;
+		if (partyWindow && partyWindow.active){
+			to = 255;
+		}else if (BattleManager._phase == 'knsCtb'){
+			to = 255;
+		}else if (
+			$gameTroop._interpreter && $gameTroop._interpreter.isRunning()
+		){
+			to = 0;
+		}
+		this.opacity = this.opacity > to ?
+			Math.max(this.opacity - 8, to) : Math.min(this.opacity + 8, to);
+	}
+	knsIsPartyChanged(a, b){
+		if (a.length != b.length){ return true; }
+		for (let i = 0; i < a.length; i++){
+			if (a[i] != b[i]){
+				return true;
+			}
+		}
+		return false;
+	}
+	knsRefresh(){
+		this._iconSprites.length = 0;
+		const parse = (function(battler){
+			return new Sprite_KnsCtbIcon(this, battler);
+		}).bind(this);
+		this._iconSprites.push(...this._party.map(parse), ...this._troop.map(parse));
+	}
+	knsUpdateChange(){
+		let party, needsRefresh = false;
+		party = $gameParty.members();
+		if (this.knsIsPartyChanged(party, this._party)){
+			this._party = party;
+			needsRefresh = true;
+		}
+		party = $gameTroop.members();
+		if (this.knsIsPartyChanged(party, this._troop)){
+			this._troop = party;
+			needsRefresh = true;
+		}
+		if (needsRefresh){ this.knsRefresh(); };
+	}
+	knsForceRefresh(){
+		this._party = $gameParty.members();
+		this._troop = $gameTroop.members();
+		this.knsRefresh();
+	}
+	knsUpdateChildren(){
+		this.removeChildren();
+		const max = $gameParty.knsMaxCtbGauge();
+		this._iconSprites.forEach(function(sp){ sp.knsUpdatePosition(max); });
+		this.addChild(...this._iconSprites.sort(function(a, b){ return a.x - b.x; }));
+	}
+}
+
+//============================================
+// new Sprite_KnsCtbIcon
+//============================================
+class Sprite_KnsCtbIcon extends Sprite{
+	constructor(parent, battler){
+		super();
+		this.knsParent = parent;
+		this._battler = battler;
+		this._frameBitmap = ImageManager.loadSystem('ctbFrame');
+		this.knsRefresh();
+		this.opacity = this.knsIsHidden() ? 0 : 255;
+		this.anchor.x = 0.5;
+	}
+	knsRefresh(){
+		this.bitmap = new Bitmap(64, 64);
+		let width = 48;
+		let bmp, symbol, color, x, y;
+		if (this._battler.isActor()){
+			bmp = ImageManager.loadCharacter(this._battler.characterName());
+			x = this._battler.knsGetRoleId() * 192 + 48;
+			y = 10;
+			color = '#00f7';
+		}else{
+			bmp = ImageManager.loadEnemy(this._battler.battlerName());
+			symbol = this._battler._letter;
+			x = bmp.width - width >> 1;
+			y = 10;
+			color = '#f007';
+		}
+		const frameBmp = this._frameBitmap;
+		if (bmp.width <= 1 || frameBmp.width <= 1) return;
+		const ctx = this.bitmap._context;
+		ctx.save();
+		ctx.fillStyle = color;
+		ctx.fillRect(0, 0, frameBmp.width, frameBmp.height);
+		ctx.drawImage(bmp._canvas, x, y, width, width, 13, 10, width, width);
+		const fWid = frameBmp.width >> 1;
+		ctx.drawImage(
+			frameBmp._canvas, 0, 0, fWid, frameBmp.height,
+			0, 0, fWid, frameBmp.height
+		);
+		ctx.globalCompositeOperation = 'destination-in';
+		ctx.drawImage(
+			frameBmp._canvas, fWid, 0, fWid, frameBmp.height,
+			0, 0, fWid, frameBmp.height
+		);
+
+		ctx.restore();
+		this.bitmap._setDirty();
+		if (symbol){
+			const width = 48;
+			const height = 32;
+			this.bitmap.fontSize = 24;
+			this.bitmap.drawText(
+				symbol, bmp.width-width - 2, bmp.height-height,
+				width, height, 'center'
+			);
+		}
+	}
+	knsUpdatePosition(max){
+		const padX = 32;
+		let ctbGauge = this._battler.ctbGauge;
+		let rate = 1;
+		if (ctbGauge == -1 || ctbGauge >= max){
+			ctbGauge = max;
+		}else{
+			rate = ctbGauge / max;
+		}
+		let tx = rate * (Graphics.width - padX * 2) + padX;
+		this.x = (tx - this.x >> 1) + this.x;
+		this.y = rate * this.knsParent.height;
+		if (this.knsIsHidden()){
+			this.opacity -= 16;
+		}else{
+			this.opacity += 16;
+		}
+	}
+	knsIsHidden(){
+		return this._battler.isHidden() || this._battler.isDead();
+	}
+}
+
+//============================================
+// alias Spriteset_Battle
+//============================================
+const _Spriteset_Battle_createUpperLayer = Spriteset_Battle.prototype.createUpperLayer;
+Spriteset_Battle.prototype.createUpperLayer = function(){
+	this.knsCreateCtbGaugeSprite();
+	_Spriteset_Battle_createUpperLayer.call(this);
+}
+
+Spriteset_Battle.prototype.knsCreateCtbGaugeSprite = function(){
+	this._spritesetKnsCtb = new Spriteset_KnsCtb();
+	this.addChild(this._spritesetKnsCtb);
+}
+
+Spriteset_Battle.prototype.knsRefreshCtbGaugeSprite = function(){
+	this._spritesetKnsCtb.knsForceRefresh();
+}
+
+//============================================
 // alias Scene_Battle
 //============================================
-/*
-Scene_Battle.prototype.update = function() {
-	var active = this.isActive();
-	$gameTimer.update(active);
-	$gameScreen.update();
-	this.updateStatusWindow();
-	this.updateWindowPositions();
-	if (active && !this.isBusy()) {
-		this.updateBattleProcess();
-	}
-	Scene_Base.prototype.update.call(this);
+const _Scene_Battle_start = Scene_Battle.prototype.start;
+Scene_Battle.prototype.start = function() {
+	_Scene_Battle_start.call(this);
+	this._spriteset.knsRefreshCtbGaugeSprite();
 };
-
-Scene_Battle.prototype.updateBattleProcess = function() {
-	if (!this.isAnyInputWindowActive() || BattleManager.isAborting() ||
-			BattleManager.isBattleEnd()) {
-		BattleManager.update();
-		this.changeInputWindow();
-	}
-};
-
-Scene_Battle.prototype.terminate = function() {
-	Scene_Base.prototype.terminate.call(this);
-	$gameParty.onBattleEnd();
-	$gameTroop.onBattleEnd();
-	AudioManager.stopMe();
-
-	ImageManager.clearRequest();
-};
-
-// BattleManager.selectPreviousCommand
-
-
-Game_Actor.prototype.makeActions = function() {
-		Game_Battler.prototype.makeActions.call(this);
-		if (this.numActions() > 0) {
-				this.setActionState('undecided');
-		} else {
-				this.setActionState('waiting');
-		}
-		if (this.isAutoBattle()) {
-				this.makeAutoBattleActions();
-		} else if (this.isConfused()) {
-				this.makeConfusionActions();
-		}
-};
-*/
-
-/*
-逃走時CTB0
-先制時アクターマックス
-不意打ち時アクター０
-死亡時CTB0
-
-CTBアイコン
-
-module BattleManager
-	def self.actor_index=(index)
-		@actor_index = index
-	end
-	def self.refresh_first_turn
-		if @surprise
-			$game_troop.alive_members.each {|actor| actor.set_max_on_ctb }
-		elsif @preemptive
-			$game_party.without_members_data.each {|actor| actor.set_max_on_ctb }
-		end
-	end
-end
-
-class Scene_Battle
-	alias ctb_start start unless $!
-	def start
-		@turning_flag = false
-		@ctb_active_members = []
-		ctb_start
-		create_ctb_gauge
-	end
-	def create_ctb_gauge
-		@ctb_gauge_sprite = Spriteset_CtbGauge.new(@help_window)
-		GC.start
-	end
-
-	alias ctrb_update_basic update_basic unless $!
-	def update_basic
-		ctrb_update_basic
-		@ctb_gauge_sprite.update
-	end
-
-	alias gauge_ctb_terminate terminate unless $!
-	def terminate
-		@ctb_gauge_sprite.dispose
-		gauge_ctb_terminate
-	end
-
-	alias ctb_process_action_end process_action_end unless $!
-	def process_action_end
-		@subject.ctb_gauge = 0 if @subject.ctb_gauge == -1
-		ctb_process_action_end
-	end
-	#--------------------------------------------------------------------------
-	# ● ターン終了
-	#--------------------------------------------------------------------------
-	def turn_end
-		@turning_flag = false
-		refresh_status
-		BattleManager.turn_end
-		process_event
-	end
-
-	#--------------------------------------------------------------------------
-	# ● 戦闘開始
-	#--------------------------------------------------------------------------
-	def battle_start
-		BattleManager.battle_start
-		process_event
-	end
-	
-	def stuck_battler(actor)
-		@ctb_active_members << actor
-	end
-	#--------------------------------------------------------------------------
-	# ● パーティコマンド選択の開始
-	#--------------------------------------------------------------------------
-	def start_party_command_selection
-		@actor_command_window.close
-		@party_command_window.setup
-	end
-	def ctb_not_move?
-		return $game_troop.alive_members.size.zero?
-	end
-	def start_battler_turn(actor)
-		return if ctb_not_move?
-		if actor.actor?
-			BattleManager.actor_index = actor.index
-			if !actor.movable?
-				actor.ctb_gauge = 0
-				turn_start
-				actor_turn_end(actor)
-			elsif actor.confusion? || actor.auto_battle?
-				actor.make_actions
-				turn_start
-				actor_turn_end(actor)
-				roll_back
-			else
-				actor_turn_end(actor)
-				if actor.movable?
-					actor.make_actions
-					Audio.se_play("Audio/SE/Sword1")
-					@help_window.show_mode = true
-					start_actor_command_selection
-					set_commands(22)
-					kns_update_basic
-					make_commands_on_circle(@actor_command_window.index, 16)
-					kns_update_basic
-					make_commands_on_circle(@actor_command_window.index, 10)
-					kns_update_basic
-					make_commands_on_circle(@actor_command_window.index, 4)
-					kns_update_basic
-					make_commands_on_circle(@actor_command_window.index, 0)
-				else
-					actor.ctb_gauge = 0
-					turn_start
-					roll_back
-				end
-			end
-		else
-			actor.turn_count += 1
-
-			if !actor.movable?
-				actor.ctb_gauge = 0
-				turn_start
-				actor_turn_end(actor)
-			elsif actor.confusion?
-				actor.make_actions
-				turn_start
-				actor_turn_end(actor)
-			else
-				if actor.movable?
-					actor_turn_end(actor)
-					actor.make_actions
-					turn_start
-				else
-					actor_turn_end(actor)
-				end
-			end
-
-			
-		end
-	end
-	def actor_turn_end(actor)
-		actor.on_turn_end
-		@log_window.display_auto_affected_status(actor)
-		@log_window.display_current_state(actor)
-		@log_window.clear
-		refresh_status
-	end
-	#--------------------------------------------------------------------------
-	# ● コマンド［戦う］
-	#--------------------------------------------------------------------------
-	def command_fight
-		start_actor_command_selection
-	end
-	def next_command
-		hide_command
-		turn_start
-	end
-	alias ctb_update update unless $!
-	def update
-		ctb_update
-		a = false
-		unless @turning_flag
-			all_battle_members.each do |member|
-				next if member.is_empty_actor?
-				next unless member.exist?
-				if member.dead?
-					
-				elsif member.ctb_gauge >= member.speed_max
-					member.ctb_gauge = -1
-					stuck_battler(member)
-					a = true
-				elsif member.ctb_gauge == -1
-				else
-					member.ctb_gauge += member.agi + 5 + rand(5) - 2
-				end
-			end
-			if @ctb_active_members.size.nonzero?
-				item = @ctb_active_members.shift
-				if item.enemy? || $game_party.battle_members.include?(item)
-					start_battler_turn(item)
-					@turning_flag = true
-				end
-			end
-			refresh_status if a
-		end
-		
-	end
-	def remove_ctb_character(actor)
-		@ctb_active_members.delete(actor)
-	end
-*/
 })();

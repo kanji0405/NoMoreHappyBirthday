@@ -453,10 +453,12 @@ KNS_BattleCharacter.setCursor(Sprite_KnsActor, '_battler');
 //===========================================
 // alias Scene_Battle
 //===========================================
+const _Scene_Battle_start = Scene_Battle.prototype.start;
 Scene_Battle.prototype.start = function() {
-	Scene_Base.prototype.start.call(this);
-	BattleManager.playBattleBgm();
-	BattleManager.startBattle();
+	const old = this.startFadeIn;
+	this.startFadeIn = function(){}
+	_Scene_Battle_start.call(this);
+	this.startFadeIn = old;
 };
 
 //===========================================
