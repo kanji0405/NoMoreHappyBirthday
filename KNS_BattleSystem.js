@@ -34,13 +34,14 @@ Game_Interpreter.prototype.command301 = function(){
 // escape rate
 BattleManager.processEscape = function() {
     $gameParty.performEscape();
-    SoundManager.playEscape();
     const success = this._preemptive ? true : (Math.random() < this._escapeRatio);
     if (success) {
-        this.displayEscapeSuccessMessage();
+		SoundManager.playEscape();
+		this.displayEscapeSuccessMessage();
         this._escaped = true;
         this.processAbort();
     } else {
+		AudioManager.playSe({name: '015-Jump01', volume: 100, pitch: 100, pan: 0});
         this.displayEscapeFailureMessage();
         this._escapeRatio += 0.25; // edited
         $gameParty.clearActions();
@@ -85,18 +86,9 @@ BattleManager.onEncounter = function(){
 				break;
 		}
 	}
-	if ($gameParty.hasRaisePreemptive()){
-		preRate *= 2;
-	}
-	if ($gameParty.hasCancelSurprise()){
-		surRate = 0;
-	}
+	if ($gameParty.hasRaisePreemptive()){	preRate *= 2;	}
+	if ($gameParty.hasCancelSurprise()){	surRate = 0;	}
     this._preemptive	= Math.random() < preRate;
     this._surprise		= !this._preemptive && Math.random() < surRate;
-	if (this._preemptive){
-		$gameParty.knsSetCtbMax();
-	}else if(this._surprise){
-		$gameTroop.knsSetCtbMax();
-	}
 };
 })();

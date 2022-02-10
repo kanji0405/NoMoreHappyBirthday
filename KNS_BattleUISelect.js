@@ -1,27 +1,4 @@
 (function(){
-//============================================
-// alias Game_Actor
-//============================================
-// normal attack
-Game_Actor.prototype.attackSkillId = function() {
-	let magicAttack, entireAttack;
-	this.equips().forEach(function(item){
-		if (item){
-			if (item.meta.magicAttack){ magicAttack = true; }
-			if (item.meta.entireAttack){ entireAttack = true; }
-		}
-	}, this);
-	if (magicAttack && entireAttack){
-		return 13;
-	}else if(entireAttack){
-		return 12;
-	}else if(magicAttack){
-		return 11;
-	}else{
-		return 1;
-	}
-};
-
 //===========================================
 // alias Game_Action
 //===========================================
@@ -160,7 +137,7 @@ class Window_KnsBattleSelect extends Window_Selectable{
 				this.contents.fontSize = 22;
 				let gaugeY = rect.y - 6;
 				let gaugeX = rect.x + nameWidth;
-				this.drawActorIcons(actor, gaugeX, rect.y);
+				this.drawActorIcons(actor, gaugeX, rect.y, Window_Base._iconWidth);
 				gaugeX += Window_Base._iconWidth;
 				this.drawActorHp(actor, gaugeX + 4, gaugeY, 144);
 				this.drawActorMp(actor, gaugeX + 154, gaugeY, 144);

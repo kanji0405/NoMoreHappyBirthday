@@ -66,4 +66,28 @@ Game_Battler.prototype.calcKnsDamage = function(atk, def, add){
 	const rate = Game_Action.KNS_CRITICAL_RATE * Game_Action.KNS_ELEMENT_RATE;
 	return atk * rate - def + (add || 0);
 }
+
+//============================================
+// alias Game_Actor
+//============================================
+// normal attack
+Game_Actor.KNS_NORMAL_ATTACK_ID = [1, 11, 12, 13];
+Game_Actor.prototype.attackSkillId = function() {
+	let magicAttack, entireAttack;
+	this.equips().forEach(function(item){
+		if (item){
+			if (item.meta.magicAttack){ magicAttack = true; }
+			if (item.meta.entireAttack){ entireAttack = true; }
+		}
+	}, this);
+	if (magicAttack && entireAttack){
+		return Game_Actor.KNS_NORMAL_ATTACK_ID[3];
+	}else if(entireAttack){
+		return Game_Actor.KNS_NORMAL_ATTACK_ID[2];
+	}else if(magicAttack){
+		return Game_Actor.KNS_NORMAL_ATTACK_ID[1];
+	}else{
+		return Game_Actor.KNS_NORMAL_ATTACK_ID[0];
+	}
+};
 })();

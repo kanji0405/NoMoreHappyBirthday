@@ -13,7 +13,7 @@ Object.defineProperties(Game_Battler.prototype, {
 const _Game_Battler_onBattleStart = Game_Battler.prototype.onBattleStart;
 Game_Battler.prototype.onBattleStart = function() {
 	_Game_Battler_onBattleStart.call(this);
-	this.ctbGauge = 0;
+	this.ctbGauge = Math.randomInt(10) * 10;
 };
 
 const _Game_Battler_onBattleEnd = Game_Battler.prototype.onBattleEnd;
@@ -52,6 +52,30 @@ Game_Unit.prototype.knsProcessCtb = function(){
 	}, this);
 	return maxMembers;
 }
+
+//============================================
+// alias Game_Troop
+//============================================
+const _Game_Troop_onBattleStart = Game_Troop.prototype.onBattleStart;
+Game_Troop.prototype.onBattleStart = function(){
+	_Game_Troop_onBattleStart.call(this);
+	if (BattleManager._surprise){
+		this.knsSetCtbMax();
+	}
+}
+
+//============================================
+// alias Game_Party
+//============================================
+const _Game_Party_onBattleStart = Game_Party.prototype.onBattleStart;
+Game_Party.prototype.onBattleStart = function(){
+	_Game_Party_onBattleStart.call(this);
+	if (BattleManager._preemptive){
+		this.knsSetCtbMax();
+	}
+}
+
+
 //============================================
 // alias BattleManager
 //============================================
@@ -99,9 +123,11 @@ BattleManager.knsStartInput = function(battler){
 	this._logWindow.displayAutoAffectedStatus(battler);
 	this._logWindow.displayRegeneration(battler);
 
+	this.refreshStatus();
 	battler.makeActions();
 	if (battler.isActor() && battler.canInput()){
-		AudioManager.playSe({name: 'Decision2', volume: 100, pitch: 100, pan: 0});
+		SoundManager.playOk();
+		// AudioManager.playSe({name: '002-System02', volume: 100, pitch: 100, pan: 0});
 		this._phase = 'input';
 		this._actorIndex = battler.index();
 		this._knsActorIndex = this._actorIndex; // パーティコマンドからの復帰
@@ -120,6 +146,7 @@ BattleManager.selectNextCommand = function(){
 		this._actorIndex = this._knsActorIndex;
 	}else{
 		this.startTurn();
+		this._logWindow.wait(12);
 	}
 };
 
@@ -149,7 +176,8 @@ class Spriteset_KnsCtb extends Sprite{
 		this._troop = [];
 		this._troopId = [];
 		this._iconSprites = [];
-		this.bitmap = this.knsCreateBaseBitmap();
+		this.bitmap = ImageManager.loadSystem('ctbGauge');//this.knsCreateBaseBitmap();
+		this.x = 32;
 		this.update();
 		this.opacity = 0;
 	}
@@ -189,12 +217,17 @@ class Spriteset_KnsCtb extends Sprite{
 		let to = 128;
 		if (partyWindow && partyWindow.active){
 			to = 255;
-		}else if (BattleManager._phase == 'knsCtb'){
-			to = 255;
 		}else if (
 			$gameTroop._interpreter && $gameTroop._interpreter.isRunning()
 		){
+			to = $gameVariables.value(7);
+		}else if (
+			BattleManager._phase == 'start' ||
+			BattleManager._phase == 'battleEnd'
+		){
 			to = 0;
+		}else if (BattleManager._phase == 'knsCtb'){
+			to = 255;
 		}
 		this.opacity = this.opacity > to ?
 			Math.max(this.opacity - 8, to) : Math.min(this.opacity + 8, to);
@@ -254,6 +287,7 @@ class Sprite_KnsCtbIcon extends Sprite{
 		this.knsRefresh();
 		this.opacity = this.knsIsHidden() ? 0 : 255;
 		this.anchor.x = 0.5;
+		this.y = 8;
 	}
 	knsRefresh(){
 		this.bitmap = new Bitmap(64, 64);
@@ -267,7 +301,7 @@ class Sprite_KnsCtbIcon extends Sprite{
 		}else{
 			bmp = ImageManager.loadEnemy(this._battler.battlerName());
 			symbol = this._battler._letter;
-			x = bmp.width - width >> 1;
+			x = Math.max(0, bmp.width - width - 4);
 			y = 10;
 			color = '#f007';
 		}
@@ -302,7 +336,7 @@ class Sprite_KnsCtbIcon extends Sprite{
 		}
 	}
 	knsUpdatePosition(max){
-		const padX = 32;
+		const padX = this.knsParent.x;
 		let ctbGauge = this._battler.ctbGauge;
 		let rate = 1;
 		if (ctbGauge == -1 || ctbGauge >= max){
@@ -310,9 +344,9 @@ class Sprite_KnsCtbIcon extends Sprite{
 		}else{
 			rate = ctbGauge / max;
 		}
-		let tx = rate * (Graphics.width - padX * 2) + padX;
+		let tx = rate * (Graphics.width - padX * 2);
 		this.x = (tx - this.x >> 1) + this.x;
-		this.y = rate * this.knsParent.height;
+		// this.y = rate * this.knsParent.height;
 		if (this.knsIsHidden()){
 			this.opacity -= 16;
 		}else{

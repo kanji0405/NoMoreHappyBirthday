@@ -335,7 +335,7 @@ class Window_SSStatus extends Window_Base{
 		this.contents.fontSize = this.standardFontSize();
 	}
 	drawSubInfo(x, y, w, title, text, unit){
-		if (text === undefined) return;
+		if (text == undefined) return;
 		this.changeTextColor(this.systemColor());
 		this.drawText(title, x, y, w);
 		y += 24;

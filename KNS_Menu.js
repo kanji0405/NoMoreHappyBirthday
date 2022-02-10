@@ -103,7 +103,7 @@ Scene_MenuBase.prototype.knsSetBackgroundOpacity = function(n){
 }
 
 Scene_MenuBase.prototype.knsUpdateBackgroundOpacity = function(){
-	if (!this._backgroundSprite || this._knsBackgroundOpacity === undefined) return;
+	if (!this._backgroundSprite || this._knsBackgroundOpacity == undefined) return;
 	const to = this._knsBackgroundOpacity;
 	const offset = 5;
 

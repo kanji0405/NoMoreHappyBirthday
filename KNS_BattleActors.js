@@ -1,67 +1,3 @@
-
-//============================================
-// alias Game_Actor
-//============================================
-// motion
-Game_Actor.prototype.performAction = function(action) {
-	Game_Battler.prototype.performAction.call(this, action);
-	if (action.isAttack()) {
-		this.performAttack();
-	} else if (action.isGuard()) {
-		this.requestMotion('guard');
-	} else if (action.isMagicSkill()) {
-		this.requestMotion('spell');
-	} else if (action.isSkill()) {
-		this.requestMotion('skill');
-	} else if (action.isItem()) {
-		this.requestMotion('item');
-	}
-};
-
-Game_Actor.prototype.performAttack = function() {
-	var weapons = this.weapons();
-	var wtypeId = weapons[0] ? weapons[0].wtypeId : 0;
-	var attackMotion = $dataSystem.attackMotions[wtypeId];
-	if (attackMotion) {
-		if (attackMotion.type === 0) {
-			this.requestMotion('thrust');
-		} else if (attackMotion.type === 1) {
-			this.requestMotion('swing');
-		} else if (attackMotion.type === 2) {
-			this.requestMotion('missile');
-		}
-		this.startWeaponAnimation(attackMotion.weaponImageId);
-	}
-};
-
-Game_Actor.prototype.performDamage = function() {
-	Game_Battler.prototype.performDamage.call(this);
-	this.requestMotion('damage');
-	SoundManager.playActorDamage();
-};
-
-Game_Actor.prototype.performEvasion = function() {
-	Game_Battler.prototype.performEvasion.call(this);
-	this.requestMotion('evade');
-};
-
-Game_Actor.prototype.performMagicEvasion = function() {
-	Game_Battler.prototype.performMagicEvasion.call(this);
-	this.requestMotion('evade');
-};
-
-Game_Actor.prototype.performVictory = function() {
-	if (this.canMove()) {
-		this.requestMotion('victory');
-	}else{
-		this.requestMotion('sit');
-	}
-};
-
-Game_Actor.prototype.performEscape = function() {
-	this.requestMotion('escape');
-};
-
 $gameBattleActors = null;
 //===========================================
 // new Game_BattleActors(wrapper)
@@ -75,7 +11,10 @@ class Game_BattleActors{
 		return this._data[id];
 	}
 	position(index){
-		return Game_BattleActors.SidePosition[index];
+		switch(BattleManager.knsFieldPosition){
+			case 1:		return Game_BattleActors.LeftPosition[index];
+			default:	return Game_BattleActors.RightPosition[index];
+		}
 	}
 	update(){
 		this.forEach(function(actor){ actor.update(); })
@@ -86,10 +25,9 @@ class Game_BattleActors{
 		}, parent || this);
 	}
 };
+Game_BattleActors.LeftPosition = [[270, 280, 6], [216, 355, 6], [150, 260, 6], [96, 330, 6]];
+Game_BattleActors.RightPosition = [[546, 280, 4], [600, 355, 4], [666, 260, 4], [720, 330, 4]];
 
-Game_BattleActors.SidePosition = [
-	[546, 280, 4], [600, 355, 4], [666, 260, 4], [720, 330, 4]
-];
 //===========================================
 // new Game_BattleActor
 //===========================================
@@ -264,73 +202,9 @@ class Game_BattleActor extends Game_Character{
 };
 
 
-(function(){
 //============================================
-// new KNS_BattleCharacter
-//============================================
-const KNS_BattleCharacter = {};
-KNS_BattleCharacter.setCursor = function(klass, name){
-	klass.KNS_SELECT_MAX = 80;
-	klass.KNS_SELECT_MATH = Math.PI / klass.KNS_SELECT_MAX;
-	klass.KNS_INIT_TONE = [0, 0, 0, 0];
-
-	const _klass_initialize = klass.prototype.initialize;
-	klass.prototype.initialize = function(){
-		this._knsIsBattler = true;
-		this.knsCreateArrow();
-		_klass_initialize.apply(this, arguments);
-	}
-	klass.prototype.knsCreateArrow = function(){
-		this._knsToneArray = klass.KNS_INIT_TONE;
-		this._knsArrowSprite = new Sprite(ImageManager.loadSystem('BattleArrow'));
-		this._knsArrowSprite.anchor.x = 0.5;
-		this._knsArrowSprite.anchor.y = 1;
-	}
-
-	klass.prototype.updateSelectionEffect = function(){
-		if (this._battler && this._battler.isSelected()) {
-			this._knsArrowSprite.visible = true;
-			this._selectionEffectCount = (this._selectionEffectCount + 1) % klass.KNS_SELECT_MAX;
-			this._knsUpdateArrow();
-		} else {
-			this._selectionEffectCount = 0;
-			this._knsArrowSprite.visible = false;
-			this.updatePartsTone(klass.KNS_INIT_TONE);
-		}
-	};
-
-	klass.prototype._knsUpdateArrow = function(){
-		const rate = this._selectionEffectCount * klass.KNS_SELECT_MATH;
-		// select
-		const tone = (32 + 80 * Math.sin(rate * 2) >> 3) << 3;
-		this.updatePartsTone([255, 255, 255, tone]);
-		this._knsArrowSprite.y = -(96 + 2 * Math.sin(rate));
-		// arrow
-		this._knsArrowSprite.x = 0;
-		this._knsArrowSprite.rotation = -this.rotation;
-		if (this.children.length != 1 + this.children.indexOf(this._knsArrowSprite)){
-			this.addChild(this._knsArrowSprite);
-		}
-	}
-}
-
-//===========================================
-// alias Sprite_Enemy
-//===========================================
-KNS_BattleCharacter.setCursor(Sprite_Enemy, '_enemy');
-Sprite_Enemy.prototype.updatePartsTone = function(tone){
-	if (this._knsToneArray.equals(tone)){
-		return;
-	}else{
-		this._knsToneArray = tone;
-	}
-	const target = this._effectTarget;
-	if (target) target.setBlendColor(tone);
-}
-
-//===========================================
 // new Sprite_KnsActor
-//===========================================
+//============================================
 class Sprite_KnsActor extends Sprite_Character{
 	//===========================================
 	// - properties
@@ -448,52 +322,76 @@ class Sprite_KnsActor extends Sprite_Character{
 		}
 	};
 }
-KNS_BattleCharacter.setCursor(Sprite_KnsActor, '_battler');
+KNS_Battlers.setCursor(Sprite_KnsActor, '_battler');
 
-//===========================================
-// alias Scene_Battle
-//===========================================
-const _Scene_Battle_start = Scene_Battle.prototype.start;
-Scene_Battle.prototype.start = function() {
-	const old = this.startFadeIn;
-	this.startFadeIn = function(){}
-	_Scene_Battle_start.call(this);
-	this.startFadeIn = old;
-};
-
-//===========================================
-// alias Spriteset_Battle
-//===========================================
-const _Spriteset_Battle_createBattleField = Spriteset_Battle.prototype.createBattleField;
-Spriteset_Battle.prototype.createBattleField = function() {
-	_Spriteset_Battle_createBattleField.call(this);
-	this._knsFadeInCnt = 0;
-};
-Spriteset_Battle.prototype.getKnsFadeInMax = function(){
-	return 60;
-}
-
-// update
-const _Spriteset_Battle_update = Spriteset_Battle.prototype.update;
-Spriteset_Battle.prototype.update = function() {
-    _Spriteset_Battle_update.call(this);
-	$gameBattleActors.update();
-    this.updateKnsFadeIn();
-	this.updateKnsZIndex();
-};
-
-Spriteset_Battle.prototype.updateKnsFadeIn = function(){
-	if (this._knsFadeInCnt < this.getKnsFadeInMax()){
-		this._knsFadeInCnt++;
-		this.updateKnsBackGroundFadeIn();
+;(function(){
+//============================================
+// alias Game_Actor
+//============================================
+// motion
+Game_Actor.prototype.performAction = function(action) {
+	Game_Battler.prototype.performAction.call(this, action);
+	if (action.isAttack()) {
+		this.performAttack();
+	} else if (action.isGuard()) {
+		this.requestMotion('guard');
+	} else if (action.isMagicSkill()) {
+		this.requestMotion('spell');
+	} else if (action.isSkill()) {
+		this.requestMotion('skill');
+	} else if (action.isItem()) {
+		this.requestMotion('item');
 	}
-}
-Spriteset_Battle.prototype.updateKnsBackGroundFadeIn = function(){
-	const rate = this._knsFadeInCnt / this.getKnsFadeInMax();
-	this._back1Sprite.opacity = 
-	this._back2Sprite.opacity = rate * 255;
-}
+};
 
+Game_Actor.prototype.performAttack = function() {
+	var weapons = this.weapons();
+	var wtypeId = weapons[0] ? weapons[0].wtypeId : 0;
+	var attackMotion = $dataSystem.attackMotions[wtypeId];
+	if (attackMotion) {
+		if (attackMotion.type === 0) {
+			this.requestMotion('thrust');
+		} else if (attackMotion.type === 1) {
+			this.requestMotion('swing');
+		} else if (attackMotion.type === 2) {
+			this.requestMotion('missile');
+		}
+		this.startWeaponAnimation(attackMotion.weaponImageId);
+	}
+};
+
+Game_Actor.prototype.performDamage = function() {
+	Game_Battler.prototype.performDamage.call(this);
+	this.requestMotion('damage');
+	SoundManager.playActorDamage();
+};
+
+Game_Actor.prototype.performEvasion = function() {
+	Game_Battler.prototype.performEvasion.call(this);
+	this.requestMotion('evade');
+};
+
+Game_Actor.prototype.performMagicEvasion = function() {
+	Game_Battler.prototype.performMagicEvasion.call(this);
+	this.requestMotion('evade');
+};
+
+Game_Actor.prototype.performVictory = function() {
+	if (this.canMove()) {
+		this.requestMotion('victory');
+	}else{
+		this.requestMotion('sit');
+	}
+};
+
+Game_Actor.prototype.performEscape = function() {
+	this.requestMotion('escape');
+};
+
+
+//============================================
+// alias Spriteset_Battle
+//============================================
 // actors
 Spriteset_Battle.prototype.createActors = function(){
 	$gameBattleActors = new Game_BattleActors();
@@ -511,15 +409,4 @@ Spriteset_Battle.prototype.createActors = function(){
 	}
 };
 
-Spriteset_Battle.prototype.updateKnsZIndex = function(){
-	let index = this._battleField.children.findIndex(function(sp){
-		return sp._knsIsBattler;
-	});
-	if (index != -1){
-		const concat = this._actorSprites.concat(this._enemySprites);
-		this._battleField.removeChild(...concat);
-		concat.sort(function(a, b){ return b.y - a.y; }).forEach(
-			function(sp){ this._battleField.addChildAt(sp, index); }, this);
-	}
-}
 })();

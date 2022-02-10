@@ -234,6 +234,9 @@ class Window_PopMessage extends Window_Message{
 				}else if (id < 0){
 					return $gamePlayer.follower(-id - 1);
 				}else{
+					if ($gameParty.inBattle()){
+						return $gameBattleActors.actor(id);
+					}
 					id = $gameParty.battleMembers().findIndex(function(actor){
 						return actor.actorId() == id;
 					});

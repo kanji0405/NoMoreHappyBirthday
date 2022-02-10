@@ -31,9 +31,9 @@ class KNS_MenuGallery{
 // alias Game_System
 //======================================================
 Game_System.prototype.knsGetItemHistory = function(type){
-	if (this._knsHistoryList === undefined) this._knsHistoryList = [];
+	if (!this._knsHistoryList) this._knsHistoryList = [];
 	if (type == -1) type = 0;
-	if (this._knsHistoryList[type] === undefined){
+	if (!this._knsHistoryList[type]){
 		this._knsHistoryList[type] = [];
 	}
 	return this._knsHistoryList[type];
@@ -64,7 +64,7 @@ Game_System.prototype.knsIsItemInHistory = function(item){
 
 // message
 Game_System.prototype.knsGetMessageLog = function(){
-	if (this._knsMessageLog === undefined){
+	if (!this._knsMessageLog){
 		this._knsMessageLog = [];
 	}
 	return this._knsMessageLog;
@@ -124,7 +124,7 @@ Game_Party.prototype.gainItem = function(item, amount, includeEquip) {
 // alias Game_Enemy
 //======================================================
 Game_Enemy.prototype.knsAddHistory = function(id) {
-	$gameSystem.addHistory(3, id === undefined ? this.enemyId() : id);
+	$gameSystem.addHistory(3, id == undefined ? this.enemyId() : id);
 };
 
 const _Game_Enemy_appear = Game_Enemy.prototype.appear;
@@ -176,7 +176,7 @@ class Window_KnsGalleryCommand extends Window_Command{
 	}
 	knsIsListCommand(index){
 		return this.commandSymbol(
-			index === undefined ? this.index() : index
+			index == undefined ? this.index() : index
 		) == 'list';
 	}
 	drawItem(index){
@@ -200,10 +200,10 @@ class Window_KnsGalleryCommand extends Window_Command{
 		this.resetFontSettings();
 	}
 	knsSetGetInfo(type){
-		if (this._obtainedList === undefined){
+		if (this._obtainedList == undefined){
 			this._obtainedList = {};
 		}
-		if (this._obtainedList[type] === undefined){
+		if (this._obtainedList[type] == undefined){
 			const list = KNS_MenuGallery.getItemList(type);
 			const found = list.filter(function(item){
 				return $gameSystem.knsIsInHistory(type, item.id);
@@ -251,7 +251,7 @@ class Window_KnsMessageLog extends Window_Selectable{
 	itemHeight(){ return 32; }
 	drawItem(index){
 		const text = this._data[index];
-		if (text === undefined){
+		if (text == undefined){
 			return;
 		}
 		const rect = this.itemRectForText(index);
@@ -306,7 +306,7 @@ class Window_KnsGalleryList extends Window_Selectable{
 	}
 	item(index){
 		return this._data ? this._data[1][
-			index === undefined ? this.index() : index] : null;
+			index == undefined ? this.index() : index] : null;
 	}
 	constructor(y, w, h){
 		super(0, y, w, h);

@@ -17,13 +17,13 @@ Game_Party.prototype.setupBattleTestItems = function(){
 //=========================================================
 // alias DataManager
 //=========================================================
-DataManager.isItem		= function(item){ return item && item.itypeId !== undefined; };
-DataManager.isWeapon	= function(item){ return item && item.wtypeId !== undefined; };
-DataManager.isArmor		= function(item){ return item && item.atypeId !== undefined; };
-DataManager.isSkill		= function(item){ return item && item.stypeId !== undefined; };
-DataManager.isEnemy		= function(item){ return item && item.battlerName !== undefined; };
+DataManager.isItem		= function(item){ return item && item.itypeId != undefined; };
+DataManager.isWeapon	= function(item){ return item && item.wtypeId != undefined; };
+DataManager.isArmor		= function(item){ return item && item.atypeId != undefined; };
+DataManager.isSkill		= function(item){ return item && item.stypeId != undefined; };
+DataManager.isEnemy		= function(item){ return item && item.battlerName != undefined; };
 DataManager.knsDescription = function(item){
-	if (!item || item.description === undefined){
+	if (!item || item.description == undefined){
 		return '';
 	}
 	let isWeapon = this.isWeapon(item);

@@ -42,7 +42,7 @@ KNS_BattleUIEquip.setDimmer = function(klass, edgeFade){
 			if (edgeFade){
 				const m = 96;
 				bitmap.fillRect(0, 1, w-m, h, c1);
-				bitmap.gradientFillRect(w-m, 0, m, h, c1, this.dimColor2());
+				bitmap.gradientFillRect(w-m, 1, m, h, c1, this.dimColor2());
 			}else{
 				bitmap.fillRect(0, 1, w, h, c1);
 			}

@@ -132,9 +132,12 @@ KNS_TERMS = {
 		'', '武器', '盾', '頭', '体', '装飾', 'アビリティ'
 	],
 
+	BATTLE_PARTY_NAME: '%sたち',
+	BATTLE_TROOP_NAME: '%sたち',
+	BATTLE_ENCOUNTER: '%eが襲い掛かってきた！',
 	BATTLE_PREEMPTIVE: '先制攻撃だ！',
 	BATTLE_SURPRISE: 'ふいうちだ！',
-	BATTLE_VICTORY: '勝利は%sにもたらされた！',
+	BATTLE_VICTORY: '勝利は%aにもたらされた！',
 	BATTLE_DEFEAT: '全滅した……',
 	BATTLE_ESCAPE: '逃げ出した！',
 	BATTLE_ESCAPE_FAILURE: '逃げられなかった！',
@@ -150,6 +153,10 @@ KNS_TERMS = {
 	BATTLE_ACTOR_PARTY_TEXT:	'逃走などのパーティコマンドを選択する',
 	BATTLE_EQUIP: '装備変更',
 	BATTLE_EQUIP_TEXT: '装備を変更する。',
+
+	BATTLE_COUNTER: '%1の反撃！',
+	BATTLE_REFLECT: '%1は魔法を跳ね返した！',
+	BATTLE_SUBSTITUTE: '%1が%2をかばった！',
 
 	CHANGE_TARGET_ENEMY: 'QW:敵へ',
 	CHANGE_TARGET_ACTOR: 'QW:味方へ',
@@ -178,6 +185,7 @@ KNS_MAPNAMES = [
 
 KNS_ADVICE = [
 	"東にある@バス停@に行こう",
+	"敵を@攻撃@してみよう",
 	"@目的@がここに入ります\n@本日は回生@なり",
 ]
 

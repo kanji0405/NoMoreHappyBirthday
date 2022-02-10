@@ -100,10 +100,10 @@ Game_Actor.prototype.knsGetRoleName = function(roleId){
 
 // exp
 Game_Actor.prototype.knsGetTotalRoleExp = function(id){
-	if (this._knsRoleExp === undefined){
+	if (!this._knsRoleExp){
 		this._knsRoleExp = new Array(Game_Actor.KnsRoleList.length).fill(0);
 	}
-	if (id === undefined){ id = this.knsGetRoleId(); }
+	if (id == undefined){ id = this.knsGetRoleId(); }
 	return this._knsRoleExp[id] || 0;
 }
 
@@ -378,7 +378,7 @@ class Scene_Role extends Scene_MenuBase{
 	}
 	onSelectOk(){
 		let roleId = this._characterSpriteLayer.setOk(this._roleSelectWindow.index());
-		if (roleId === undefined){
+		if (roleId == undefined){
 			this._roleSelectWindow.activate();
 			this._helpWindow.setText(KNS_TERMS.ROLE_ALREADY);
 		}else{

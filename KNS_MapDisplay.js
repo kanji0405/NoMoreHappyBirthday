@@ -1,6 +1,6 @@
 Game_Map.KNS_RE_MAP_NAME = /^(\d+)$/
 Game_Map.prototype.displayName = function(name) {
-	const base = name === undefined ? $dataMap.displayName : name;
+	const base = name == undefined ? $dataMap.displayName : name;
 	if (Game_Map.KNS_RE_MAP_NAME.test(base)){
 		return KNS_MAPNAMES[Math.floor(base)];
 	}else{
@@ -431,7 +431,7 @@ Game_Interpreter.prototype.knsSetItemInfo = function(container, method){
 
 // handler
 Game_Interpreter.prototype.knsShowInfo = function(info){
-	if (info === undefined){
+	if (info == undefined){
 		info = $gameSystem.knsGetLogInfo();
 	}
 	SceneManager._scene.knsShowInfo(info);
@@ -463,7 +463,7 @@ const _Scene_Battle_create = Scene_Battle.prototype.create;
 Scene_Battle.prototype.create = function(){
 	_Scene_Battle_create.call(this);
 	this._knsCreateSpritesetLogInfo();
-	this._logSpriteset.y = 200;
+	this._logSpriteset.y = 290;
 }
 
 //============================================
@@ -591,7 +591,8 @@ class Sprite_KnsMenuButton extends Sprite{
 		this.anchor.x = 1;
 		this.opacity = 0;
 		this._knsMovingCnt = 1;
-		if ($gameSystem._knsPositionType === undefined){
+		this._knsShowCnt = 30;
+		if ($gameSystem._knsPositionType == undefined){
 			$gameSystem._knsPositionType = 0;
 		}
 		this.update();
@@ -602,6 +603,10 @@ class Sprite_KnsMenuButton extends Sprite{
 			this.knsUpdateMoving();
 		}else{
 			this.knsUpdatePosition();
+		}
+		if (this._knsShowCnt > 0){
+			this._knsShowCnt--;
+			this.opacity = 0;
 		}
 	}
 	knsMovingMax(){ return 15; }
