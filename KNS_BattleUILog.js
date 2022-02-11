@@ -296,7 +296,7 @@ Window_BattleLog.prototype.displayActionResults = function(subject, target) {
 
 Window_BattleLog.prototype.displayFailure = function(target) {
 	if (target.result().isHit() && !target.result().success) {
-		this.push('addText', TextManager.actionFailure.format(target.name()));
+		this.push('addText', KNS_TERMS.BATTLE_ACTION_FAILURE.format(target.name()));
 	}
 };
 Window_BattleLog.prototype.displayCritical = function(target) {};
@@ -342,9 +342,9 @@ Window_BattleLog.prototype.displayRemovedStates = function(target) {
 
 Window_BattleLog.prototype.displayChangedBuffs = function(target) {
 	var result = target.result();
-	this.displayBuffs(target, result.addedBuffs, TextManager.buffAdd);
-	this.displayBuffs(target, result.addedDebuffs, TextManager.debuffAdd);
-	this.displayBuffs(target, result.removedBuffs, TextManager.buffRemove);
+	this.displayBuffs(target, result.addedBuffs, KNS_TERMS.BATTLE_ADD_BUFF);
+	this.displayBuffs(target, result.addedDebuffs, KNS_TERMS.BATTLE_ADD_DEBUFF);
+	this.displayBuffs(target, result.removedBuffs, KNS_TERMS.BATTLE_REMOVE_BUFF);
 };
 
 Window_BattleLog.prototype.displayBuffs = function(target, buffs, fmt) {

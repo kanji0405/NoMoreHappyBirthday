@@ -1,0 +1,4 @@
+KNS_TERMS.CH = {
+	CURRENT_LANGUAGE: '中文',
+	USE_ENGLISH_SYMBOL: false,
+};

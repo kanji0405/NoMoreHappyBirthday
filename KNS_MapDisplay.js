@@ -132,9 +132,6 @@ class Sprite_LogInfo extends Sprite{
 		this._knsFadePage0 = 30;
 		this._knsFadePage1 = this._knsFadePageEnd - this._knsFadePage0;
 	}
-	_knsObtainedText(info){
-		return KNS_TERMS.OBTAINED.replace("%s", info[0].name);
-	}
 	_knsObtainedNumber(info){
 		return KNS_TERMS.OBTAINED_NUMBER.replace("%d", info[1]);
 	}
@@ -142,7 +139,7 @@ class Sprite_LogInfo extends Sprite{
 		let bmp;
 		switch(type){
 			case 0:
-				bmp = this.refreshAsText(type, KNS_ADVICE[info], 400, 80);
+				bmp = this.refreshAsText(type, KNS_TERMS.ADVICES[info], 400, 80);
 				break;
 			case 1: case 2: case 3:
 				bmp = this.refreshAsItem(type, info);
@@ -197,7 +194,7 @@ class Sprite_LogInfo extends Sprite{
 		const bmp = this._knsCreateBack(330, 36, padY);
 		const numberWidth = 64;
 		const wid = bmp.width - startX - numberWidth - (bmp.height >> 1);
-		bmp.drawText(this._knsObtainedText(info),
+		bmp.drawText(info[0].name,
 			startX, padY, wid - 4, bmp.height - padY
 		);
 		bmp.drawText(this._knsObtainedNumber(info),

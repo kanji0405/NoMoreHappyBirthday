@@ -13,10 +13,10 @@ Game_System.prototype.knsSetPopInfo = function(type, id){
 // alias Game_Interpreter
 //=============================================
 Game_Interpreter.prototype.knsGetFaceName = function(faceName){
-	let name = KNS_NAMES[faceName];
+	let name = KNS_TERMS.FACE_NAMES[faceName];
 	if (name){
 		if ($gameSwitches && $gameSwitches.value(6) == true){
-			name = KNS_NAMES.hatena;
+			name = KNS_TERMS.FACE_NAMES.hatena;
 		}else{
 			if (typeof name == "number"){
 				name = $gameActors.actor(name).name();

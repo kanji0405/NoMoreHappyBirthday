@@ -93,7 +93,7 @@ Game_Actor.prototype.paramBase = function(paramId) {
 Game_Actor.prototype.knsGetRoleName = function(roleId){
 	const roleClass = Game_Actor.knsGetRoleClass(roleId);
 	if (roleClass){
-		return roleClass.name;
+		return KNS_TERMS.ROLE_NAMES[roleId - 1] || "";
 	}else{
 		return this.name();
 	}

@@ -9,12 +9,16 @@ Window_Options.prototype.windowWidth = function(){ return 500; };
 Window_Options.prototype.isDoneSymbol = function(index){
 	return this.commandSymbol(index) == 'cancel';
 }
+Window_Options.prototype.isLanguageSymbol = function(index){
+	return this.commandSymbol(index) == KNS_TERMS.__LANGUAGE_SYMBOL;
+}
 
 Window_Options.prototype.booleanStatusText = function(value) {
 	return KNS_TERMS[value ? 'SET_ON' : 'SET_OFF'];
 };
 
 Window_Options.prototype.addGeneralOptions = function() {
+	this.addCommand(KNS_TERMS.__LANGUAGE_NAME, KNS_TERMS.__LANGUAGE_SYMBOL);
 	this.addCommand(KNS_TERMS.SET_ALWAYS_DASH, 'alwaysDash');
 };
 
@@ -38,22 +42,31 @@ Window_Options.prototype.drawItem = function(index){
 		const titleWidth = rect.width - statusWidth;
 		this.drawText(this.commandName(index), rect.x, rect.y, titleWidth, 'left');
 		const symbol = this.commandSymbol(index);
-		if (this.isVolumeSymbol(symbol)) {
+		if (this.isVolumeSymbol(symbol)){
 			const value = this.getConfigValue(symbol);
 			this.drawGauge(
 				titleWidth, rect.y - 2, statusWidth, value / 100,
 				this.textColor(30), this.textColor(31)
 			);
 		}
-		this.drawText(this.statusText(index), titleWidth, rect.y, statusWidth, 'right');
+		let name;
+		if (this.isLanguageSymbol(index)){
+			name = KNS_TERMS.CURRENT_LANGUAGE;
+		}else{
+			name = this.statusText(index);
+		}
+		this.drawText(name, titleWidth, rect.y, statusWidth, 'right');
 	}
 };
 
 // input
 const _Window_Options_processOk = Window_Options.prototype.processOk;
 Window_Options.prototype.processOk = function() {
-	if (this.isDoneSymbol(this.index())){
+	let index = this.index();
+	if (this.isDoneSymbol(index)){
 		Window_Command.prototype.processOk.call(this);
+	}else if (this.isLanguageSymbol(index)){
+		this.knsChangeLanguageSymbol(+1, index);
 	}else{
 		_Window_Options_processOk.call(this);
 	}
@@ -61,17 +74,32 @@ Window_Options.prototype.processOk = function() {
 
 const _Window_Options_cursorRight = Window_Options.prototype.cursorRight;
 Window_Options.prototype.cursorRight = function(wrap) {
-	if (!this.isDoneSymbol(this.index())){
+	let index = this.index();
+	if (this.isLanguageSymbol(index)){
+		this.knsChangeLanguageSymbol(+1, index);
+	}else if (!this.isDoneSymbol(index)){
 		_Window_Options_cursorRight.call(this, wrap);
 	}
 };
 
 const _Window_Options_cursorLeft = Window_Options.prototype.cursorLeft;
 Window_Options.prototype.cursorLeft = function(wrap) {
-	if (!this.isDoneSymbol(this.index())){
+	let index = this.index();
+	if (this.isLanguageSymbol(index)){
+		this.knsChangeLanguageSymbol(-1, index);
+	}else if (!this.isDoneSymbol(index)){
 		_Window_Options_cursorLeft.call(this, wrap);
 	}
 };
+
+Window_Options.prototype.knsChangeLanguageSymbol = function(d, index){
+	const max = KNS_TERMS.__LANGUAGE_LIST.length;
+	const symbol = this.commandSymbol(index);
+	let value = this.getConfigValue(symbol);
+	value = (value + max + d) % max;
+	this.changeValue(symbol, value);
+	this.refresh();
+}
 
 //================================================
 // alias Scene_Options

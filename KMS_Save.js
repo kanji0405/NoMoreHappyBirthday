@@ -300,7 +300,7 @@ class Window_SSStatus extends Window_Base{
 		this.drawSubInfo(
 			x, 100, w, KNS_TERMS.FILE_PLACE, $gameMap.displayName(info.place), null);
 		if (info.advice != undefined){
-			const text = KNS_ADVICE[info.advice];
+			const text = KNS_TERMS.ADVICES[info.advice];
 			if (text){
 				x = 0;
 				const system = this.textColor(2);

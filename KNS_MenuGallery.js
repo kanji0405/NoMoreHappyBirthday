@@ -358,9 +358,14 @@ class Window_KnsGalleryList extends Window_Selectable{
 	}
 	updateHelp(){
 		const item = this.item();
-		this._helpWindow.setItem(item);
+		const inHistory = this.knsIsDataInHistory(item);
+		if (inHistory){
+			this._helpWindow.setItem(item);
+		}else{
+			this._helpWindow.setText('');
+		}
 		if (this._infoWindow){
-			this._infoWindow.setItem(item, this.knsIsDataInHistory(item));
+			this._infoWindow.setItem(item, inHistory);
 		}
 	}
 	deactivate(){

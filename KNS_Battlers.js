@@ -142,4 +142,20 @@ Spriteset_Battle.prototype.updateKnsZIndex = function(){
 	}
 };
 
+//===========================================
+// - prevent mirror display
+//===========================================
+KNS_Battlers.preventMirror = function(proto){
+	const _update = proto.update;
+	proto.update = function(){
+		_update.call(this);
+		if (this.parent && this.parent.scale.x < 0){
+			this.scale.x = -1;
+		}else{
+			this.scale.x = 1;
+		}
+	}
+}
+KNS_Battlers.preventMirror(Sprite_StateIcon.prototype);
+KNS_Battlers.preventMirror(Sprite_StateOverlay.prototype);
 })();

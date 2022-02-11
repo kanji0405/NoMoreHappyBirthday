@@ -82,10 +82,18 @@ Scene_Title.prototype.createForeground = function() {
     this.addChild(this._backSprite2);
 
 	// new credit Sprite
-	const bmp = new Bitmap(444, 32);
+	const authorName = KNS_TERMS.CREDIT.replace(
+		'%s', KNS_TERMS.__VERSION
+	).split('\n');
+	const lineHeight = 32;
+	const bmp = new Bitmap(444, lineHeight * authorName.length);
 	bmp.outlineWidth = 3;
 	bmp.fontSize = 20;
-	bmp.drawText(KNS_TERMS.CREDIT, 0, 0, bmp.width, bmp.height, 'right');
+	authorName.forEach(function(line, i){
+		bmp.drawText(line, 0, 
+			i * lineHeight, bmp.width, lineHeight, 'right'
+		);
+	})
 	this._creditSprite = new Sprite(bmp);
 	this._creditSprite.x = Graphics.width - bmp.width - 10;
 	this._creditSprite.y = Graphics.height - bmp.height;
