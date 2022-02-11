@@ -1,3 +1,4 @@
+"use strict";
 //=========================================================
 // new Sprite_KnsBodyBase
 //=========================================================
@@ -179,8 +180,9 @@ class Sprite_KnsBodyPart extends Sprite_KnsBodyBase{
 		return rect;
 	}
 }
-;(function(){
 
+
+;(function(){
 //=========================================================
 // - check clicked
 //=========================================================
@@ -377,6 +379,7 @@ Game_Player.prototype.refresh = function() {
 Game_Follower.prototype.refresh = function() {
 	this.knsSetActor(this.actor(), this.isVisible());
 };
+
 //=========================================================
 // alias Game_Event
 //=========================================================
@@ -533,7 +536,7 @@ Sprite_Character.prototype.updateKnsCharacter = function(){
 	}
 }
 
-_Sprite_Character_characterBlockX = Sprite_Character.prototype.characterBlockX;
+const _Sprite_Character_characterBlockX = Sprite_Character.prototype.characterBlockX;
 Sprite_Character.prototype.characterBlockX = function() {
 	if (!this._character || this._knsAllCharacter){
 		return 0;
@@ -541,12 +544,13 @@ Sprite_Character.prototype.characterBlockX = function() {
 		return _Sprite_Character_characterBlockX.call(this);
 	}
 };
-_Sprite_Character_characterBlockY = Sprite_Character.prototype.characterBlockY;
+
+const _Sprite_Character_characterBlockY = Sprite_Character.prototype.characterBlockY;
 Sprite_Character.prototype.characterBlockY = function() {
 	if (!this._character || this._knsAllCharacter){
 		return 0;
 	}else{
-		return _Sprite_Character_characterBlockX.call(this);
+		return _Sprite_Character_characterBlockY.call(this);
 	}
 };
 

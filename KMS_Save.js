@@ -7,7 +7,9 @@
  * @author TOMY (Kamesoft)
  */
 // from KMS_SaveWithSnap.js
+
 (function() {
+'use strict';
 //======================================================
 // alias DataManager
 //======================================================
@@ -18,7 +20,7 @@ DataManager.makeSavefileInfo = function() {
 	const info	= _makeSavefileInfo.apply(this, arguments);
 	const bitmap = this.makeSavefileBitmap();
 	if (bitmap){
-		info.snapUrl = bitmap.toDataURL();
+		info.snapUrl = bitmap._canvas.toDataURL('image/jpeg', 0.75);;
 	}
 	info.advice	= $gameVariables.value(6);
 	info.gold	= $gameParty.gold();
@@ -64,31 +66,16 @@ Game_Temp.prototype.getSavefileBitmap = function(){
 // alias Game_Party
 //======================================================
 Game_Party.prototype.charactersForSavefile = function() {
-    return [];
+	return [];
 };
 
 Game_Party.prototype.facesForSavefile = function() {
-    return this.battleMembers().map(function(actor) {
-        return [actor.faceName(), actor.faceIndex(), actor.level];
-    })
+	return this.battleMembers().map(function(actor) {
+		return [actor.faceName(), actor.faceIndex(), actor.level];
+	})
 };
 
 // KMS_Save over
-
-//-----------------------------------------------------------------------------
-// Bitmap
-Bitmap.prototype.toDataURL = function(){
-	let type, value;
-	if (KNS_Atsumaru.isAtsumaru()){
-		type = 'image/jpeg';
-		value = 0.15;
-	}else{
-		type = 'image/jpeg';
-		value = 0.75;
-	}
-	return this._canvas.toDataURL(type, value);
-};
-
 //======================================================
 // new Sprite_ScreenShot
 //======================================================

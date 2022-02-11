@@ -1,4 +1,5 @@
-KNS_COLORS = {
+"use strict";
+let KNS_COLORS = {
 	UI_BACK: '#2c7076',
 	UI_BACK_DARK: '#0c5056',
 	SYSTEM_ACCENT: '#ebac0e',
@@ -7,7 +8,7 @@ KNS_COLORS = {
 	WINDOW_BACK2: '#0000',
 }
 
-KNS_TERMS = {
+let KNS_TERMS = {
 	CREDIT: 'ver 1.0.0 ©2022 莞爾の草',
 	TITLE_NEW_GAME:	'New Game',
 	TITLE_CONTINUE:	'Continue',
@@ -166,7 +167,7 @@ KNS_TERMS = {
 	TARGET_ALL_ACTOR: '味方全体',
 };
 
-KNS_NAMES = {
+let KNS_NAMES = {
 	nulpo:		1,
 	vanitti:	2,
 	lessia:		3,
@@ -174,7 +175,7 @@ KNS_NAMES = {
 	hatena:		"？？？？？",
 }
 
-KNS_MAPNAMES = [
+let KNS_MAPNAMES = [
 	'ナルポの家',
 	'バニッチの家',
 	'ボイドシティ',
@@ -183,7 +184,7 @@ KNS_MAPNAMES = [
 	'',
 ]
 
-KNS_ADVICE = [
+let KNS_ADVICE = [
 	"東にある@バス停@に行こう",
 	"敵を@攻撃@してみよう",
 	"@目的@がここに入ります\n@本日は回生@なり",

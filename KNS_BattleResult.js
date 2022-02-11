@@ -1,3 +1,4 @@
+"use strict";
 
 //===========================================
 // new Spriteset_KnsResult
@@ -11,7 +12,13 @@ class Spriteset_KnsResult extends Sprite{
 		this._reward = reward;
 		this.createElements();
 	}
-	createElements(){}
+	createElements(){
+		this._rewards.exp;
+		this._rewards.gold;
+		this._rewards.items.forEach(function(item) {
+			$gameMessage.add(TextManager.obtainItem.format(item.name));
+		});
+	}
 	isBusy(){
 		return false;
 	}
@@ -44,31 +51,6 @@ BattleManager.makeRewards = function() {
 };
 
 BattleManager.displayRewards = function(){};
-
-BattleManager.displayExp = function() {
-	var exp = this._rewards.exp;
-	if (exp > 0) {
-		var text = TextManager.obtainExp.format(exp, TextManager.exp);
-		$gameMessage.add('\\.' + text);
-	}
-};
-
-BattleManager.displayGold = function() {
-	var gold = this._rewards.gold;
-	if (gold > 0) {
-		$gameMessage.add('\\.' + TextManager.obtainGold.format(gold));
-	}
-};
-
-BattleManager.displayDropItems = function() {
-	var items = this._rewards.items;
-	if (items.length > 0){
-		items.forEach(function(item) {
-			$gameMessage.add(TextManager.obtainItem.format(item.name));
-		});
-	}
-};
-
 
 //===========================================
 // alias Scene_Battle

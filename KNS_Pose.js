@@ -1,7 +1,8 @@
+"use strict";
 //=========================================================
 // alias KNS_Pose
 //=========================================================
-KNS_Pose = {
+const KNS_Pose = {
 	reEventPos: /<KNS.+?pos\((.+?),\s*(.+?)\).*?>/,
 	reEventMode: /<KNS.+?mode\((.+?)(?:,\s*(\w+?))?\).*?>/,
 	reEventWeapon: /<KNS.+?weapon\((.+?)\).*?>/,

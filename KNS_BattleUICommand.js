@@ -1,8 +1,9 @@
+"use strict";
+const KNS_BattleUICommand = {};
 (function(){
 //===========================================
 // new KNS_BattleUICommand
 //===========================================
-const KNS_BattleUICommand = {};
 KNS_BattleUICommand.PARTY_COMMAND_COLORS = [
 	'#c70a0a', '#2d36a8'
 ];
@@ -25,6 +26,7 @@ KNS_BattleUICommand.setSprites = function(proto){
 
 	proto.onTouch = function(){}
 };
+
 KNS_BattleUICommand.setHelp = function(proto){
 	const _activate = proto.activate;
 	proto.activate = function(){

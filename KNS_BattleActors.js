@@ -1,4 +1,5 @@
-$gameBattleActors = null;
+"use strict";
+let $gameBattleActors = null;
 //===========================================
 // new Game_BattleActors(wrapper)
 //===========================================
@@ -25,7 +26,7 @@ class Game_BattleActors{
 		}, parent || this);
 	}
 };
-Game_BattleActors.LeftPosition = [[270, 280, 6], [216, 355, 6], [150, 260, 6], [96, 330, 6]];
+Game_BattleActors.LeftPosition = [[150, 260, 6], [96, 330, 6], [270, 280, 6], [216, 355, 6]];
 Game_BattleActors.RightPosition = [[546, 280, 4], [600, 355, 4], [666, 260, 4], [720, 330, 4]];
 
 //===========================================

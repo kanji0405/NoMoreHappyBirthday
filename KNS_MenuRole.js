@@ -1,3 +1,4 @@
+"use strict";
 (function(){
 //=========================================================
 // alias Game_Party
@@ -28,8 +29,8 @@ Game_Actor.prototype.knsGetCurrentExp = function(){
 		return null;
 	}else{
 		let cur = this.expForLevel(this.level) || 0;
-		exp1 = Math.max((this.currentExp() || 0) - cur, 0);
-		exp2 = exp1 + this.nextRequiredExp(this.nextLevelExp() || 1);
+		let exp1 = Math.max((this.currentExp() || 0) - cur, 0);
+		let exp2 = exp1 + this.nextRequiredExp(this.nextLevelExp() || 1);
 		return [exp1, exp2];
 	}
 }

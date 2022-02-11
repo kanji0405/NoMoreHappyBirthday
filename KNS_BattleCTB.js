@@ -1,3 +1,4 @@
+"use strict";
 (function(){
 //============================================
 // alias Game_Battler
@@ -74,7 +75,6 @@ Game_Party.prototype.onBattleStart = function(){
 		this.knsSetCtbMax();
 	}
 }
-
 
 //============================================
 // alias BattleManager

@@ -1,4 +1,5 @@
 (function(){
+"use strict";
 Game_Enemy.prototype.knsIsFieldLeft = function(){
 	return BattleManager.knsFieldPosition == 1;
 }

@@ -1,3 +1,4 @@
+"use strict";
 //============================================
 // new KNS_Battlers
 //============================================
@@ -64,7 +65,6 @@ BattleManager.setup = function(){
 	}else{
 		BattleManager.knsFieldPosition = 0;
 	}
-	console.log(BattleManager.knsFieldPosition);
 }
 
 //============================================

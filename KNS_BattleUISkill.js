@@ -1,9 +1,10 @@
-(function(){
+"use strict";
 //===========================================
 // new KNS_BattleUISkill
 //===========================================
-KNS_BattleUISkill = {};
+const KNS_BattleUISkill = {};
 
+;(function(){
 KNS_BattleUISkill.setItemWindow = function(klass){
 	const _initialize = klass.prototype.initialize;
 	klass.prototype.initialize = function(x, y, width, height){
@@ -37,7 +38,8 @@ KNS_BattleUISkill.setItemWindow = function(klass){
 			this._dimmerSprite.setFrame(0, 0, w, h);
 		}
 	};
-}
+};
+
 //===========================================
 // - apply for item/skill windows
 //===========================================

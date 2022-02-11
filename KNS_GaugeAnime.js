@@ -1,9 +1,10 @@
+"use strict";
+
+const KNS_GaugeAnime = {};
 (function(){
 //===========================================
 // new KNS_GaugeAnime
 //===========================================
-KNS_GaugeAnime = {};
-
 KNS_GaugeAnime.changeValue = function(cur, old){
 	const curParam = this[cur];
 	const oldParam = this[old];

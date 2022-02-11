@@ -1,5 +1,5 @@
-(function() {
-
+"use strict";
+(function(){
 SceneManager.snapForBackground = function(needBlur){
 	this._backgroundBitmap = this.snap();
 	if (this._backgroundBitmap && needBlur) this._backgroundBitmap.blur();

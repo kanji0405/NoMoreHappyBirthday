@@ -1,3 +1,4 @@
+// disable strict mode for eval
 (function(){
 //============================================
 // alias Game_Action
