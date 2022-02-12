@@ -234,4 +234,8 @@ KNS_TERMS.EN = {
 		"Spider",
 		"",
 	],
+
+	RESULT_ROLE_POINT: "ROLE",
+	RESULT_DROP_ITEM: "Drop items",
+	RESULT_ROLE_LEVELUP: "%1's %2 level went up to %3!"
 };

@@ -294,6 +294,7 @@ class Sprite_KnsCtbIcon extends Sprite{
 		let width = 48;
 		let bmp, symbol, color, x, y;
 		if (this._battler.isActor()){
+			this.scale.x = BattleManager.knsFieldPosition == 1 ? -1 : 1;
 			bmp = ImageManager.loadCharacter(this._battler.characterName());
 			x = this._battler.knsGetRoleId() * 192 + 48;
 			y = 10;

@@ -40,6 +40,7 @@ Game_Actor.KnsRoleList = Uint8Array.from([0, 1, 2, 3, 4, 5, 6, 7]);
 Game_Actor.KnsRoleLevel = Uint16Array.from(
 	[50, 150, 300, 500, 1000, 2500, 5000, 5000, 7500, 8000]
 );
+Game_Actor.KnsRoleSum = Game_Actor.KnsRoleLevel.reduce(function(r, a){ return r + a; }, 0);
 
 Game_Actor.prototype.knsGetRoleId = function(){
 	return this._knsRoleId || 0;
@@ -108,6 +109,21 @@ Game_Actor.prototype.knsGetTotalRoleExp = function(id){
 	return this._knsRoleExp[id] || 0;
 }
 
+Game_Actor.prototype.knsGainRoleExp = function(offset, id){
+	if (id == undefined){ id = this.knsGetRoleId(); }
+	if (id == 0) return;
+	const cur = this.knsGetTotalRoleExp(id);
+	if (cur < Game_Actor.KnsRoleSum){
+		this._knsRoleExp[id] = Math.min(
+			Math.max(cur + offset, 0), Game_Actor.KnsRoleSum
+		);
+	}
+}
+
+Game_Actor.prototype.isRoleLevelMax = function(id){
+	return this.knsGetTotalRoleExp(id) >= Game_Actor.KnsRoleSum;
+}
+
 Game_Actor.prototype.knsGetRoleLevel = function(id){
 	let exp = this.knsGetTotalRoleExp(id);
 	let level = 0, sum = 0;
@@ -129,10 +145,6 @@ Game_Actor.prototype.knsGetRoleCurrentExp = function(id){
 
 Game_Actor.prototype.knsGetRoleNextExp = function(id){
 	return Game_Actor.KnsRoleLevel[this.knsGetRoleLevel(id)] || 0;
-}
-
-Game_Actor.prototype.isLevelMax = function(id){
-	return this.knsGetRoleNextExp(id) == 0;
 }
 
 Game_Actor.prototype.knsEquippable = function(typeId, code){

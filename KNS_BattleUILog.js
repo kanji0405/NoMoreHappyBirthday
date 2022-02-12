@@ -39,10 +39,10 @@ BattleManager.knsPushBattleLog = function(text, until){
 	this._logWindow.push('addText', 
 	text.replace('%a', $gameParty.name()).replace('%e', $gameTroop.name())
 	);
-	if (until == true){
+	if (until === true){
 		this._logWindow.push('waitUntil');
 	}else{
-		this._logWindow.push('wait');
+		this._logWindow.push('wait', until);
 	}
 	this._logWindow.push('clear');
 }
@@ -58,7 +58,7 @@ BattleManager.displayStartMessages = function() {
 };
 
 BattleManager.displayVictoryMessage = function(){
-	this.knsPushBattleLog(KNS_TERMS.BATTLE_VICTORY, true);
+	this.knsPushBattleLog(KNS_TERMS.BATTLE_VICTORY, 45);
 };
 
 BattleManager.displayDefeatMessage = function(){
@@ -95,6 +95,26 @@ Window_BattleLog.prototype.wait = function(n) {
 Window_BattleLog.prototype.waitUntil = function(){
 	this._knsWaitUntil = 15;
 };
+
+// knsSetResult
+Window_BattleLog.prototype.knsSetResult = function(spriteset){
+	this._knsResult = spriteset;
+}
+
+Window_BattleLog.prototype.knsStartResult = function(){
+	this._knsResult.knsStart();
+}
+
+Window_BattleLog.prototype.knsRoleLevelUp = function(actor, level){
+	const bactor = $gameBattleActors.actor(actor.actorId());
+	bactor.setKnsMode('evade');
+	actor.startAnimation(97);
+	const roleId = actor.knsGetRoleId();
+	this.addText(KNS_TERMS.RESULT_ROLE_LEVELUP.format(actor.name(), 
+		actor.knsGetRoleName(roleId), actor.knsGetRoleLevel(roleId)
+	));
+	this.waitUntil(5);
+}
 
 const _Window_BattleLog_updateWaitCount = Window_BattleLog.prototype.updateWaitCount;
 Window_BattleLog.prototype.updateWaitCount = function(){

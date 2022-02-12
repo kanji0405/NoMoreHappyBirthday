@@ -234,4 +234,8 @@ KNS_TERMS.JP = {
 		"おおグモ",
 		"",
 	],
+
+	RESULT_ROLE_POINT: "ロール",
+	RESULT_DROP_ITEM: "落としたもの",
+	RESULT_ROLE_LEVELUP: "%1の%2レベルが%3に上がった！"
 };
